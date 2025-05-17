@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
+<div class="container">
+    <div class="left-section">
+        <div class="brand">
+            <div class="logo">
+                <span>Apollo University</span>
+            </div>
+        </div>
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+
+        
+        <div class="hero-content">
+            <h1>Join Apollo University</h1>
+            <p>Start your journey with us and become part of our vibrant academic community. Create your account to access all our resources and opportunities.</p>
+        </div>
+    </div>
+    
+    <div class="right-section">
+        <div class="login-container">
+            <h2>Create Account</h2>
+            
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="fullname" class="required-field">Full Name</label>
+                    <div class="input-container">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="required-field">Email Address</label>
+                    <div class="input-container">
+                        <span class="input-icon">📧</span>
+                        <input type="email" id="email" name="email" placeholder="your.email@apollo.edu" required>
+                    </div>
+                </div>
+                
+                {% comment %} <div class="form-group">
+                    <label class="required-field">Select Your Role</label>
+                    <div class="role-options">
+                        <div class="role-option">
+                            <input type="radio" id="role-student" name="role" value="student" required>
+                            <label for="role-student">Student</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="role-faculty" name="role" value="faculty" required>
+                            <label for="role-faculty">Faculty</label>
+                        </div>
+                    </div>
+                </div> {% endcomment %}
+{% comment %} 
+                <div class="form-group faculty-only">
+                    <label for="facultyCode" class="required-field">Faculty Code</label>
+                    <div class="input-container">
+                        <span class="input-icon">🔑</span>
+                        <input type="password" id="facultyCode" name="facultyCode" 
+                               placeholder="Enter faculty verification code"
+                               pattern="[A-Za-z0-9]{6,}"
+                               title="Faculty code must be at least 6 characters long">
+                    </div> {% endcomment %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="required-field">Password</label>
+                    <div class="input-container">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" name="password" 
+                               placeholder="Create a password" 
+                               required 
+                               minlength="8"
+                               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                               title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
+                    </div>
+                    <p class="password-hint">Password must be at least 8 characters long and include uppercase, lowercase, and numbers</p>
+                </div>
+
+                
+                {% comment %} <div class="form-group">
+                    <label for="password" class="required-field">Password</label>
+                    <div class="input-container">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" name="confirmpassword" 
+                               placeholder="Confirm your password" 
+                               required 
+                               minlength="8"
+                               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                               title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
+                    </div> {% endcomment %}
+
+                <div class="form-group">
+                    <label for="confirm-password" class="required-field">Confirm Password</label>
+                    <div class="input-container">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="confirm-password" name="confirm_password" 
+                               placeholder="Confirm your password" 
+                               required>
+                               
+                </div>
+
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <div class="remember-me">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms" class="required-field">I agree to the Terms & Conditions</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="login-button">Create Account</button>
+            </form>
+            
+            <p class="signup-link">Already have an account? <a href="{% url 'loginn' %}">Sign In</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

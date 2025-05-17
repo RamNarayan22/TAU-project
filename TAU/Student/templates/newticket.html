@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  header {
+    text-align: center;
+  }
+
+  .logo {
+    width: 100px;
+    height: auto;
+  }
+
+  h1 {
+    color: #333;
+  }
+
+  label {
+    display: block;
+    margin: 10px 0 5px;
+  }
+
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+  button {
+    background-color: #5cb85c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #4cae4c;
+  }
+
+  .ticket-info {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #e7f3fe;
+    border: 1px solid #b3d7ff;
+    border-radius: 4px;
+  }
+</style>
+
+<div class="container">
+  <header>
+    <img
+      src="{% static 'css\Screenshot 2025-05-16 215851.png' %}"
+      alt="University Logo"
+      class="logo"
+    />
+    <h1>Complaint Submission Form</h1>
+  </header>
+
+  <form id="complaintForm" method="POST" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+    
+    <label for="department">Department:</label>
+    <select id="department" name="department" required>
+      <option value="Finance">Finance</option>
+      <option value="Hostel">Hostel</option>
+      <option value="Mess">Mess</option>
+      <option value="Academics">Academics</option>
+      <option value="Others">Others</option>
+    </select>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea>
+
+    <label for="attachment">Attachment:</label>
+    <input type="file" id="attachment" name="attachment" accept="image/*" />
+
+    <button type="submit">Submit Complaint</button>
+  </form>
+
+  {% if ticket_id %}
+    <div id="ticketInfo" class="ticket-info">
+      <h2>Your Ticket ID:</h2>
+      <p id="ticketId">{{ ticket_id }}</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
