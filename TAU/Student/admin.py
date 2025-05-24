@@ -1,6 +1,3 @@
-
-
-# Register your models here.
 from django.contrib import admin
 from .models import Complaint
 from django.utils.html import format_html
@@ -10,7 +7,6 @@ class ComplaintAdmin(admin.ModelAdmin):
     readonly_fields = ('ticket_id', 'attachment_link')
 
     def short_description(self, obj):
-        # Show a shortened version of the description
         return (obj.description[:50] + '...') if len(obj.description) > 50 else obj.description
     short_description.short_description = 'Description'
 

@@ -1,0 +1,412 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title|default:"University Faculty Admin Dashboard" }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7fc;
+      color: #344055;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1rem;
+      box-shadow: 3px 0 15px rgb(0 0 0 / 0.1);
+      overflow-y: auto;
+      justify-content: space-between;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+      user-select: none;
+    }
+    .apollo-logo {
+      width: 36px;
+      height: 36px;
+      fill: #fff;
+      margin-right: 0.8rem;
+      flex-shrink: 0;
+    }
+    .sidebar-header h2 {
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+    }
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .nav-list li {
+      margin-bottom: 1.2rem;
+    }
+    .nav-list li a {
+      text-decoration: none;
+      color: #dcdcff;
+      font-weight: 500;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    .nav-list li a:hover,
+    .nav-list li a.active {
+      background-color: rgba(255 255 255 / 0.2);
+      color: #fff;
+      font-weight: 700;
+    }
+    .nav-list li a svg {
+      margin-right: 0.8rem;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    .logout-container {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .logout-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.5rem 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+      width: 100%;
+      justify-content: center;
+    }
+    .logout-btn svg {
+      fill: #667eea;
+      width: 20px;
+      height: 20px;
+    }
+    .logout-btn:hover,
+    .logout-btn:focus {
+      background-color: #667eea;
+      color: #fff;
+      outline: none;
+    }
+    .logout-btn:hover svg,
+    .logout-btn:focus svg {
+      fill: #fff;
+    }
+
+    /* Main content */
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem 2.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      background-color: #f4f7fc;
+    }
+
+    /* Top Bar */
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1.6rem;
+    }
+    .topbar .profile {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .topbar .profile img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid #667eea;
+      margin-right: 0.8rem;
+      object-fit: cover;
+    }
+    .topbar .profile span {
+      font-weight: 600;
+      color: #344055;
+      user-select: none;
+    }
+
+    /* Dashboard cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    .card {
+      background-color: #fff;
+      padding: 1.6rem 2rem;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgb(102 126 234 / 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      transition: transform 0.3s ease;
+      cursor: default;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgb(102 126 234 / 0.25);
+    }
+    .card .title {
+      font-size: 1rem;
+      color: #667eea;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      user-select: none;
+    }
+    .card .number {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #344055;
+      user-select: none;
+    }
+    .card .icon {
+      margin-left: auto;
+      margin-top: auto;
+      color: #667eea;
+      opacity: 0.2;
+      font-size: 3.2rem;
+      user-select: none;
+    }
+
+    /* Table for recent faculty members */
+    .table-container {
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgb(102 126 234 / 0.15);
+      padding: 2rem;
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 700px;
+    }
+    thead {
+      background: #667eea;
+      color: #fff;
+      border-radius: 16px 16px 0 0;
+    }
+    thead th {
+      padding: 0.8rem 1.2rem;
+      font-weight: 600;
+      text-align: left;
+      user-select: none;
+    }
+    tbody tr {
+      border-bottom: 1px solid #e6ebf4;
+      transition: background-color 0.2s ease;
+      cursor: default;
+    }
+    tbody tr:hover {
+      background-color: #f1f5ff;
+    }
+    tbody td {
+      padding: 1rem 1.2rem;
+      font-weight: 500;
+      color: #344055;
+      user-select: none;
+    }
+    tbody td.status {
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 0.4rem 0.8rem;
+      text-align: center;
+      width: 110px;
+      user-select: none;
+    }
+    .status.active {
+      background-color: #e1f0ff;
+      color: #0077ff;
+    }
+    .status.inactive {
+      background-color: #ffebe8;
+      color: #ff4d4d;
+    }
+    .status.pending {
+      background-color: #fff4e5;
+      color: #ffb547;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+        height: auto;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 1rem;
+        justify-content: flex-start;
+      }
+      .sidebar-header h2 {
+        display: none;
+      }
+      .nav-list {
+        display: flex;
+      }
+      .nav-list li {
+        margin: 0 1rem 0 0;
+      }
+      .logout-container {
+        margin-top: 0;
+        margin-left: 1rem;
+      }
+      .logout-btn {
+        width: auto;
+        padding: 0.5rem 1rem;
+      }
+      .main-content {
+        padding: 1.5rem 1rem;
+      }
+      .cards {
+        grid-template-columns: 1fr 1fr;
+      }
+      table {
+        min-width: 100%;
+      }
+      .topbar {
+        justify-content: center;
+        gap: 1rem;
+      }
+    }
+    @media (max-width: 450px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+  </style>
+</head>
+<body>
+  <nav class="sidebar" aria-label="Primary">
+    <div>
+      <div class="sidebar-header">
+        <svg class="apollo-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2L2 20h20L12 2zm0 3.84L17.64 18H6.36L12 5.84zM11 10h2v5h-2v-5zM11 17h2v2h-2v-2z"/>
+        </svg>
+        <h2>Apollo Admin</h2>
+      </div>
+      <ul class="nav-list">
+        <li><a href="{% url 'faculty_dashboard' %}" class="active">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 12h14v-6H7v6zm12-20H9a2 2 0 0 0-2 2v8h2V5h10v14h-3v2h3a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2z"/></svg>
+          Dashboard</a></li>
+      </ul>
+    </div>
+    <div class="logout-container">
+      <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="logout-btn" type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M16 13v-2H7V8l-5 4 5 4v-3h9zM20 3h-6v2h6v14h-6v2h6a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
+          </svg>
+          Logout
+        </button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="profile" tabindex="0">
+        <img src="{{ user.profile_image_url|default:'https://randomuser.me/api/portraits/men/86.jpg' }}" alt="Admin profile picture" />
+        <span>{{ user.get_full_name|default:'Dr. Susan Lee' }}</span>
+      </div>
+    </header>
+
+    <section class="cards" aria-label="Dashboard statistics">
+      <article class="card">
+        <div>
+          <h3 class="title">Complaints</h3>
+          <p class="number">{{ total_complaints }}</p>
+        </div>
+        <div class="icon">📢</div>
+      </article>
+      <article class="card">
+        <div>
+          <h3 class="title">Resolved</h3>
+          <p class="number">{{ resolved_complaints }}</p>
+        </div>
+        <div class="icon">✅</div>
+      </article>
+      <article class="card">
+        <div>
+          <h3 class="title">Ongoing</h3>
+          <p class="number">{{ ongoing_complaints }}</p>
+        </div>
+        <div class="icon">⌛</div>
+      </article>
+    </section>
+
+    <section class="table-container" aria-label="Recent Faculty Members">
+      <h2 style="margin-top: 0; margin-bottom: 1rem;">Recent Faculty Members</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for faculty in faculty_list %}
+          <tr>
+            <td>{{ faculty.name }}</td>
+            <td>{{ faculty.department }}</td>
+            <td>{{ faculty.email }}</td>
+            <td>
+              <span class="status {{ faculty.status|lower }}">{{ faculty.status }}</span>
+            </td>
+            <td>{{ faculty.joined_date|date:"M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">No faculty members found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

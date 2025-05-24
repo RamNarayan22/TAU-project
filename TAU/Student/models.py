@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django.db import models
+from django.db import models, transaction, IntegrityError
+
 
 class Complaint(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # ← Add this line
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -19,17 +20,26 @@ class Complaint(models.Model):
         ('Others', 'Others'),
     ])
     description = models.TextField()
-    attachment = models.ImageField(upload_to='attachments/', null=True, blank=True)
     ticket_id = models.CharField(max_length=20, unique=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    created_at = models.DateTimeField(auto_now_add=True)  # for recent_complaints sort
+    created_at = models.DateTimeField(auto_now_add=True)
+    attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.ticket_id:
             prefix = self.department[:3].upper()
-            count = Complaint.objects.filter(department=self.department).count() + 1
-            self.ticket_id = f"{prefix}{count:03}"
-        super().save(*args, **kwargs)
+            for count in range(1, 10000):  # e.g., FIN001 to FIN9999
+                potential_id = f"{prefix}{count:03}"
+                if not Complaint.objects.filter(ticket_id=potential_id).exists():
+                    self.ticket_id = potential_id
+                    break
+
+        try:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+        except IntegrityError:
+            self.ticket_id = None  # Retry generation
+            return self.save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.ticket_id} - {self.department}"

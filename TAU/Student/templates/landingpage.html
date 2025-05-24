@@ -4,7 +4,7 @@
 {% block content %}
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-    /* Your custom styles here — same as before */
+
     body {
         font-family: 'Montserrat', sans-serif;
         background: #f5f7fa;
@@ -88,38 +88,22 @@
     }
 
     .btn {
-    background: #4a90e2;
-    color: white;
-    padding: 0.9rem 1.8rem;
-    border: none;
-    border-radius: 50px;
-    font-weight: 700;
-    font-size: 1rem;
-    text-decoration: none;
-    flex: 1 1 200px;
-    text-align: center;
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-    @media (max-width: 768px) {
-    .btn {
-        font-size: 0.9rem;
-        padding: 0.7rem 1.4rem;
+        background: #4a90e2;
+        color: white;
+        padding: 0.9rem 1.8rem;
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        flex: 1 1 200px;
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        display: inline-block;
+        transition: all 0.3s ease;
     }
-}
-
-    @media (max-width: 480px) {
-        .btn {
-            font-size: 0.85rem;
-            padding: 0.6rem 1.2rem;
-            width: 100%;
-        }
-    }
-
 
     .btn:hover {
         background: #357abd;
@@ -137,48 +121,31 @@
         font-weight: 700;
     }
 
-    .complaint-item {
-        border-bottom: 1px solid #eee;
-        padding: 0.75rem 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .ticket-info {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e7f3fe;
+        border-left: 5px solid #4a90e2;
+        border-radius: 5px;
     }
 
-    .complaint-item:last-child {
-        border-bottom: none;
-    }
-
-    .complaint-title {
-        font-weight: 600;
-        color: #333;
-    }
-
-    .complaint-status {
-        font-size: 0.9rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        color: white;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .status-pending {
-        background-color: #f5a623;
-    }
-
-    .status-resolved {
-        background-color: #7ed321;
-    }
-
-    .status-inprogress {
-        background-color: #4a90e2;
-    }
-
-    @media(max-width: 768px) {
+    @media (max-width: 768px) {
         .stats-container,
         .actions {
             flex-direction: column;
+        }
+
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.7rem 1.4rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .btn {
+            font-size: 0.85rem;
+            padding: 0.6rem 1.2rem;
+            width: 100%;
         }
     }
 </style>
@@ -188,59 +155,60 @@
         <img src="{% static 'css/image.png' %}" alt="My Brand Logo">
     </div>
     <nav>
-      {% comment %} <a href="{% url 'logout' %}">Logout</a>  {% endcomment %}
+        {% comment %} <a href="{% url 'logout' %}">Logout</a> {% endcomment %}
     </nav>
 </header>
 
 <main>
     <div class="welcome">Welcome, <span id="student-name">{{ student_name }}</span>!</div>
 
-  
     <div class="actions">
         <a href="{% url 'nt' %}" class="btn">Raise a Complaint</a>
-    
-    </div> 
+    </div>
 
     <section class="recent-complaints">
-    <h2>Recent Complaint</h2>
-    {% if latest_complaint %}
-        <div class="stats-container">
-            
-            <div class="stat-card">
-            <div class="stat-number" id="total-complaints">{{ total }}</div>
-            <div class="stat-label">Total Complaints Raised</div>
-        </div>
-        <div class="stat-card">
-        <div class="stat-number" id="pending-complaints">{{ pending }}</div>
-        <div class="stat-label">Pending Complaints</div>
-        </div>
-        <div class="stat-card">
-        <div class="stat-number" id="resolved-complaints">{{ resolved }}</div>
-        <div class="stat-label">Resolved Complaints</div>
-        </div>
-    {% else %}
-        <p>No recent complaints submitted.</p>
-    {% endif %}
-</section>
+        <h2>Recent Complaint</h2>
+        {% if recent_complaints %}
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-complaints">{{ total }}</div>
+                    <div class="stat-label">Total Complaints Raised</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pending-complaints">{{ pending }}</div>
+                    <div class="stat-label">Pending Complaints</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="resolved-complaints">{{ resolved }}</div>
+                    <div class="stat-label">Resolved Complaints</div>
+                </div>
+            </div>
+
+            <div>
+                {% for complaint in recent_complaints %}
+                   {% if ticket_id %}
+            <div class="ticket-info">
+        <h2>Complaint Submitted Successfully!</h2>
+        <p>Your Ticket ID is: <strong>{{ ticket_id }}</strong></p>
+                                        </div>
+                                {% endif %}
+
+                        </div>
+                        <div class="complaint-status 
+                            {% if complaint.status == 'Pending' %}status-pending
+                            {% elif complaint.status == 'Resolved' %}status-resolved
+                            {% else %}status-inprogress{% endif %}">
+                            {{ complaint.status }}
+                        </div>      
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No recent complaints submitted.</p>
+        {% endif %}
+    </section>
+
 
 </main>
-
-
-
-<div class="stats-container">
-    <div class="stat-card">
-        <div class="stat-number" id="total-complaints">{{ total }}</div>
-        <div class="stat-label">Total Complaints Raised</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number" id="pending-complaints">{{ pending }}</div>
-        <div class="stat-label">Pending Complaints</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number" id="resolved-complaints">{{ resolved }}</div>
-        <div class="stat-label">Resolved Complaints</div>
-    </div>
-</div>
-
 
 {% endblock %}

@@ -57,13 +57,6 @@ def lp(request):
             messages.error(request, 'User with this email does not exist.')
     return render(request, 'login.html')
 
-
-
-    
-
-
-
-
 def logout(request):
     pass
  
@@ -73,31 +66,35 @@ def nt(request):
         form = ComplaintForm(request.POST, request.FILES)
         if form.is_valid():
             complaint = form.save(commit=False)
-            complaint.user = request.user  # Associate complaint with logged-in user
+            complaint.user = request.user
             complaint.save()
-            # Redirect to landing page with ticket ID in query string
-            return redirect('landingpage') 
+
+            # Store ticket ID in session for use on landing page
+            request.session['ticket_id'] = complaint.ticket_id
+
+            return redirect('landingpage')  # Or whatever your URL name is
     else:
         form = ComplaintForm()
 
     return render(request, 'newticket.html', {'form': form})
 
-
 @login_required
 def landingpage(request):
-
     user = request.user
+
+    # Pop ticket_id from session so it only shows once
+    ticket_id = request.session.pop('ticket_id', None)
+
     total = Complaint.objects.filter(user=user).count()
     pending = Complaint.objects.filter(user=user, status='Pending').count()
     resolved = Complaint.objects.filter(user=user, status='Resolved').count()
-    
     recent_complaints = Complaint.objects.filter(user=user).order_by('-created_at')[:3]
 
-
-    return render(request,'landingpage.html', {
+    return render(request, 'landingpage.html', {
         'student_name': user.first_name or user.username,
-        'total_complaints': total,
-        'pending_complaints': pending,
-        'resolved_complaints': resolved,
+        'total': total,
+        'pending': pending,
+        'resolved': resolved,
         'recent_complaints': recent_complaints,
+        'ticket_id': ticket_id,  # Make sure this is passed
     })
