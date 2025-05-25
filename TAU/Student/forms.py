@@ -1,10 +1,9 @@
-from django import forms
-from .models import Complaint
-from django.db import models
 
+
+from django import forms
+from core.models import Complaint
 
 class ComplaintForm(forms.ModelForm):
     class Meta:
         model = Complaint
-        fields = ['department', 'description', 'attachment']
-
+        fields = ['title', 'description', 'department', 'attachment']

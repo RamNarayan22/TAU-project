@@ -1,28 +1,63 @@
-from django.shortcuts import render
-
-
-from Student.models import Complaint
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from core.models import Complaint, AuditLog, DepartmentProfile
+from core.utils import send_status_notification
+from .forms import UpdateComplaintForm
+import csv
+from django.http import HttpResponse
+from datetime import datetime
 
+@login_required
+def dashboard_view(request):
+    dept = request.user.core_profile.department
+    complaints = Complaint.objects.filter(department=dept)
+    status_filter = request.GET.get('status')
+    if status_filter:
+        complaints = complaints.filter(status=status_filter)
 
-def dept_dashboard(request):
-    # You can also assign department from a user profile model if it's dynamic
-    department = request.user.profile.department  # Assuming user has department set
+    overdue = complaints.filter(status__in=['Open', 'In Progress'], sla_due__lt=datetime.now())
+    stats = {s: complaints.filter(status=s).count() for s in dict(Complaint.STATUS_CHOICES)}
 
-    complaints = Complaint.objects.filter(department=department)
-    
-    context = {
-        'department': department,
-        'total_complaints': complaints.count(),
-        'resolved_complaints': complaints.filter(status='Resolved').count(),
-        'ongoing_complaints': complaints.filter(status__in=['Pending', 'In Progress']).count(),
-        'recent_complaints': complaints.order_by('-created_at')[:5],
-    }
-    return render(request, 'Fadmin.html', context)
+    return render(request, 'dashboard.html', {
+        'complaints': complaints,
+        'complaint_counts': stats,
+        'overdue': overdue
+    })
+
+@login_required
+def update_complaint(request, complaint_id):
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    if request.method == 'POST':
+        form = UpdateComplaintForm(request.POST, instance=complaint)
+        if form.is_valid():
+            prev_status = complaint.status
+            form.save()
+            send_status_notification(complaint)
+            AuditLog.objects.create(
+                complaint=complaint,
+                user=request.user,
+                action=f"Updated from {prev_status} to {complaint.status}"
+            )
+            return redirect('dashboard')
+    else:
+        form = UpdateComplaintForm(instance=complaint)
+    return render(request, 'dept_admin/update_complaint.html', {'form': form})
+
+@login_required
+def export_csv(request):
+    dept = request.user.core_profile.department
+    complaints = Complaint.objects.filter(department=dept)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="complaints.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Ticket ID', 'Title', 'Status', 'Created At', 'SLA Due'])
+    for c in complaints:
+        writer.writerow([c.ticket_id, c.title, c.status, c.created_at, c.sla_due])
+    return response
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 def login_view(request):
     if request.method == 'POST':
@@ -31,12 +66,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            if user.is_staff:
-                dept = getattr(user.profile, 'department', None)
-                if dept:
-                    dept_slug = dept.lower().replace(" ", "")
-                    return redirect(f'/admin/{dept_slug}/')
-            return redirect('/')  # Redirect normal users somewhere
+            return redirect('dashboard')
         else:
-            return render(request, 'login.html', {'error': 'Invalid username or password'})
+            messages.error(request, 'Invalid username or password')
     return render(request, 'login.html')

@@ -1,6 +1,14 @@
-from django.contrib import admin
+
 from django.urls import path
-from dept_admin.admin import (
+from .views import login_view, dashboard_view, export_csv, update_complaint
+
+
+
+from django.contrib import admin
+
+
+#  custom admin site instances 
+from Student.admin import (
     finance_admin_site,
     hostel_admin_site,
     mess_admin_site,
@@ -8,15 +16,21 @@ from dept_admin.admin import (
     others_admin_site,
     gatepass_admin_site,
 )
-from dept_admin.views import login_view
 
 urlpatterns = [
-    path('admin/finance/', finance_admin_site.urls),
-    path('admin/hostel/', hostel_admin_site.urls),
-    path('admin/mess/', mess_admin_site.urls),
-    path('admin/academics/', academics_admin_site.urls),
-    path('admin/others/', others_admin_site.urls),
-    path('admin/gatepass/', gatepass_admin_site.urls),
+    
+    
 
+    path('finance/', finance_admin_site.urls),
+    path('hostel/', hostel_admin_site.urls),
+    path('mess/', mess_admin_site.urls),
+    path('academics/', academics_admin_site.urls),
+    path('others/', others_admin_site.urls),
+    path('gatepass/', gatepass_admin_site.urls),
     path('login/', login_view, name='login'),
+    path('dashboard/', dashboard_view, name='dashboard'),
+    path('dashboard/export-csv/', export_csv, name='export_csv'),
+    path('update/<int:complaint_id>/', update_complaint, name='update_complaint'),
+
+    
 ]

@@ -60,6 +60,12 @@ def lp(request):
 def logout(request):
     pass
  
+from django.shortcuts import render, redirect
+from core.models import Complaint, Department
+from django.contrib.auth.decorators import login_required
+from core.utils import generate_ticket_id, calculate_sla_due
+from .forms import ComplaintForm
+
 @login_required
 def nt(request):
     if request.method == 'POST':
@@ -67,15 +73,13 @@ def nt(request):
         if form.is_valid():
             complaint = form.save(commit=False)
             complaint.user = request.user
+            complaint.ticket_id = generate_ticket_id(complaint.department.name)
+            complaint.sla_due = calculate_sla_due()
             complaint.save()
-
-            # Store ticket ID in session for use on landing page
             request.session['ticket_id'] = complaint.ticket_id
-
-            return redirect('landingpage')  # Or whatever your URL name is
+            return redirect('landingpage')
     else:
         form = ComplaintForm()
-
     return render(request, 'newticket.html', {'form': form})
 
 @login_required
