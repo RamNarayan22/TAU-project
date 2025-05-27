@@ -13,3 +13,4 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
             instance.student_profile.save()
         except Profile.DoesNotExist:
             Profile.objects.create(user=instance)
+    

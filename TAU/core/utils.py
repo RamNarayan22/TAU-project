@@ -1,6 +1,6 @@
-# 3. UTILS (core/utils.py)
 from .models import Complaint
 from datetime import timedelta, datetime
+from django.core.mail import send_mail
 
 def generate_ticket_id(department_name):
     prefix = department_name[:3].upper()
@@ -9,7 +9,6 @@ def generate_ticket_id(department_name):
 
 def calculate_sla_due():
     return datetime.now() + timedelta(days=2)
-from django.core.mail import send_mail
 
 def send_status_notification(complaint):
     message = f"""

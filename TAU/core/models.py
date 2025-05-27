@@ -1,61 +1,69 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-class Department(models.Model):
-    name = models.CharField(max_length=100)
+DEPARTMENT_CHOICES = [
+    ('Finance', 'Finance'),
+    ('Hostel', 'Hostel'),
+    ('Mess', 'Mess'),
+    ('Academics', 'Academics'),
+    ('Others', 'Others'),
+    ('Gate Pass', 'Gate Pass'),
+]
 
-    def __str__(self):
-        return self.name
-
+STATUS_CHOICES = [
+    ('Pending', 'Pending'),
+    ('In Progress', 'In Progress'),
+    ('Resolved', 'Resolved'),
+    ('Rejected', 'Rejected'),
+]
 
 class Complaint(models.Model):
-    STATUS_CHOICES = [
-        ('Open', 'Open'),
-        ('In Progress', 'In Progress'),
-        ('On Hold', 'On Hold'),
-        ('Escalated', 'Escalated'),
-        ('Resolved', 'Resolved'),
-        ('Closed', 'Closed')
-    ]
-
-    ticket_id = models.CharField(max_length=30, unique=True, editable=False)
-    title = models.CharField(max_length=200)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='complaints')
+    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
     description = models.TextField()
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='core_complaints')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
-    attachment = models.FileField(upload_to='attachments/', blank=True, null=True)
+    ticket_id = models.CharField(max_length=20, unique=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    sla_due = models.DateTimeField(null=True, blank=True)
+    attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.ticket_id:
+            prefix = self.department[:3].upper()
+            for count in range(1, 10000):
+                potential_id = f"{prefix}{count:03}"
+                if not Complaint.objects.filter(ticket_id=potential_id).exists():
+                    self.ticket_id = potential_id
+                    break
+        from django.db import transaction, IntegrityError
+        try:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+        except IntegrityError:
+            # retry once to avoid infinite recursion
+            if not getattr(self, '_retrying', False):
+                self._retrying = True
+                self.ticket_id = None
+                self.save(*args, **kwargs)
+            else:
+                raise
 
     def __str__(self):
-        return f"{self.ticket_id} - {self.title}"
+        return f"{self.ticket_id} - {self.department}"
 
-
-class DepartmentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='core_profile')
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.department.name}"
-
-
-class StudentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='core_student_profile')
-    student_id = models.CharField(max_length=100)
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES, null=True, blank=True)
+    is_admin = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} Profile"
+        
 
-
-class AuditLog(models.Model):
-    complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='core_auditlogs')
-    action = models.CharField(max_length=255)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.timestamp} - {self.action} on {self.complaint.ticket_id}"
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    else:
+        instance.profile.save()

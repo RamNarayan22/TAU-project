@@ -22,12 +22,12 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
-    path('SuperUser/', admin.site.urls),
+    path('admin/', admin.site.urls),
    
 
 
     path('student/', include('Student.urls')),        # all student URLs prefixed by /student/
-    path('adminpanel/', include('dept_admin.urls')),  # all admin URLs prefixed by /adminpanel/
+    path('departmentadmin/', include('dept_admin.urls')),  # all admin URLs prefixed by /adminpanel/
 
 
 
