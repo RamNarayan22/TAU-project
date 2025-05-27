@@ -57,7 +57,7 @@ class Complaint(models.Model):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_app_profile')
     department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
     is_admin = models.BooleanField(default=False)
 

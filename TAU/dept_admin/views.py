@@ -7,6 +7,9 @@ import csv
 from django.http import HttpResponse
 from datetime import datetime
 
+from .models import Complaint
+
+
 @login_required
 def dashboard_view(request):
     dept = request.user.core_profile.department
@@ -18,7 +21,7 @@ def dashboard_view(request):
     overdue = complaints.filter(status__in=['Open', 'In Progress'], sla_due__lt=datetime.now())
     stats = {s: complaints.filter(status=s).count() for s in dict(Complaint.STATUS_CHOICES)}
 
-    return render(request, 'dashboard.html', {
+    return render(request, 'depatment_dashboard.html', {
         'complaints': complaints,
         'complaint_counts': stats,
         'overdue': overdue
@@ -41,7 +44,7 @@ def update_complaint(request, complaint_id):
             return redirect('dashboard')
     else:
         form = UpdateComplaintForm(instance=complaint)
-    return render(request, 'dept_admin/update_complaint.html', {'form': form})
+    return render(request,'update_complaint.html', {'form': form})
 
 @login_required
 def export_csv(request):
@@ -66,7 +69,14 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('dashboard')
+
+            # Check if this is a department admin (faculty)
+            if hasattr(user, 'core_profile') and user.is_staff:
+                return redirect('dashboard')  # Department admin dashboard
+
+            # Else assume student
+            return redirect('student_dashboard')
         else:
             messages.error(request, 'Invalid username or password')
-    return render(request, 'login.html')
+    return render(request, 'loginn.html')
+

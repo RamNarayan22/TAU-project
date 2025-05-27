@@ -27,7 +27,7 @@ urlpatterns = [
     path('academics/', academics_admin_site.urls),
     path('others/', others_admin_site.urls),
     path('gatepass/', gatepass_admin_site.urls),
-    path('login/', login_view, name='login'),
+    path('', login_view, name='login'),
     path('dashboard/', dashboard_view, name='dashboard'),
     path('dashboard/export-csv/', export_csv, name='export_csv'),
     path('update/<int:complaint_id>/', update_complaint, name='update_complaint'),

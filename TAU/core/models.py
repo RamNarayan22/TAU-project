@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 
-
 class Department(models.Model):
     name = models.CharField(max_length=100)
 
@@ -41,6 +40,14 @@ class DepartmentProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.department.name}"
+
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='core_student_profile')
+    student_id = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.user.username
 
 
 class AuditLog(models.Model):

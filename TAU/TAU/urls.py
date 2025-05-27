@@ -23,7 +23,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('SuperUser/', admin.site.urls),
-    path('',include('Student.urls')),
-    path('admin/',include('dept_admin.urls')),
+   
+
+
+    path('student/', include('Student.urls')),        # all student URLs prefixed by /student/
+    path('adminpanel/', include('dept_admin.urls')),  # all admin URLs prefixed by /adminpanel/
+
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
