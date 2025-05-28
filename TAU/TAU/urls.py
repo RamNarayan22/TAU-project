@@ -27,7 +27,7 @@ urlpatterns = [
 
 
     path('student/', include('Student.urls')),        # all student URLs prefixed by /student/
-    path('departmentadmin/', include('dept_admin.urls')),  # all admin URLs prefixed by /adminpanel/
+    path('department/', include('dept_admin.urls')),  # all admin URLs prefixed by /department/
 
 
 

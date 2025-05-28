@@ -1,31 +1,29 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from core.models import Department, Complaint, AuditLog, DepartmentProfile, StudentProfile
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 
-class DepartmentProfileInline(admin.StackedInline):
-    model = DepartmentProfile
-    can_delete = False
-    verbose_name_plural = "Department Profile"
+from .models import Complaint, Department, StudentProfile, DepartmentProfile, AuditLog
 
 class StudentProfileInline(admin.StackedInline):
     model = StudentProfile
     can_delete = False
-    verbose_name_plural = "Student Profile"
+    verbose_name_plural = 'Student Profile'
 
-class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'is_staff', 'is_superuser')
+class DepartmentProfileInline(admin.StackedInline):
+    model = DepartmentProfile
+    can_delete = False
+    verbose_name_plural = 'Department Profile'
 
-    def get_inline_instances(self, request, obj=None):
-        inlines = []
-        if obj:
-            if obj.is_staff:
-                inlines.append(DepartmentProfileInline(self.model, self.admin_site))
-            else:
-                inlines.append(StudentProfileInline(self.model, self.admin_site))
-        return inlines
+class CustomUserAdmin(DefaultUserAdmin):
+    inlines = (StudentProfileInline, DepartmentProfileInline)
 
+# Unregister and re-register User with the custom inline admin
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(Complaint)
+
+# Register other models
 admin.site.register(Department)
+admin.site.register(Complaint)
 admin.site.register(AuditLog)
+admin.site.register(StudentProfile)
+admin.site.register(DepartmentProfile)

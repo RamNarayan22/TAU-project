@@ -1,59 +1,75 @@
-from django.contrib import admin
-from django.contrib.admin import AdminSite
-from django.utils.html import format_html
-from core.models import Complaint
+from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db import transaction, IntegrityError
 
-class DepartmentComplaintAdmin(admin.ModelAdmin):
-    list_display = ('ticket_id', 'user', 'description', 'status', 'created_at')
-    list_filter = ('status',)
+# Include 'Gate Pass' to match your admin sites
+DEPARTMENT_CHOICES = [
+    ('Finance', 'Finance'),
+    ('Hostel', 'Hostel'),
+    ('Mess', 'Mess'),
+    ('Academics', 'Academics'),
+    ('Others', 'Others'),
+    ('Gate Pass', 'Gate Pass'),
+]
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if hasattr(self.admin_site, 'department_name') and self.admin_site.department_name:
-            return qs.filter(department=self.admin_site.department_name)
-        return qs
+class Department(models.Model):
+    name = models.CharField(max_length=100)
 
-class BaseDepartmentAdminSite(AdminSite):
-    department_name = None
+    def __str__(self):
+        return self.name
 
-    def has_permission(self, request):
-        return request.user.is_active and request.user.is_staff and request.user.profile.is_admin and request.user.profile.department == self.department_name
 
-    def each_context(self, request):
-        context = super().each_context(request)
-        context['department_name'] = self.department_name
-        return context
+class Complaint(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='deptadmin_complaints')
 
-class FinanceAdminSite(BaseDepartmentAdminSite):
-    department_name = 'Finance'
-    site_header = 'Finance Department Admin'
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('In Progress', 'In Progress'),
+        ('Resolved', 'Resolved'),
+        ('Rejected', 'Rejected'),
+    ]
 
-class HostelAdminSite(BaseDepartmentAdminSite):
-    department_name = 'Hostel'
-    site_header = 'Hostel Department Admin'
+    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
+    description = models.TextField()
+    ticket_id = models.CharField(max_length=20, unique=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
 
-class MessAdminSite(BaseDepartmentAdminSite):
-    department_name = 'Mess'
-    site_header = 'Mess Department Admin'
+    def save(self, *args, **kwargs):
+        if not self.ticket_id:
+            prefix = self.department[:3].upper()
+            for count in range(1, 10000):
+                potential_id = f"{prefix}{count:03}"
+                if not Complaint.objects.filter(ticket_id=potential_id).exists():
+                    self.ticket_id = potential_id
+                    break
+        try:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+        except IntegrityError:
+            self.ticket_id = None  # Avoid infinite loop by resetting
+            return self.save(*args, **kwargs)
 
-class AcademicsAdminSite(BaseDepartmentAdminSite):
-    department_name = 'Academics'
-    site_header = 'Academics Department Admin'
+    def __str__(self):
+        return f"{self.ticket_id} - {self.department}"
 
-class OthersAdminSite(BaseDepartmentAdminSite):
-    department_name = 'Others'
-    site_header = 'Others Department Admin'
 
-class GatePassAdminSite(BaseDepartmentAdminSite):
-    department_name = 'Gate Pass'
-    site_header = 'Gate Pass Department Admin'
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='deptadmin_profile')
+    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
+    is_admin = models.BooleanField(default=False)
 
-finance_admin_site = FinanceAdminSite(name='finance_admin')
-hostel_admin_site = HostelAdminSite(name='hostel_admin')
-mess_admin_site = MessAdminSite(name='mess_admin')
-academics_admin_site = AcademicsAdminSite(name='academics_admin')
-others_admin_site = OthersAdminSite(name='others_admin')
-gatepass_admin_site = GatePassAdminSite(name='gatepass_admin')
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
 
-for site in [finance_admin_site, hostel_admin_site, mess_admin_site, academics_admin_site, others_admin_site, gatepass_admin_site]:
-    site.register(Complaint, DepartmentComplaintAdmin)
+
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    else:
+        if hasattr(instance, 'deptadmin_profile'):
+            instance.deptadmin_profile.save()

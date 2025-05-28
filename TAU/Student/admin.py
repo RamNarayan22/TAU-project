@@ -6,7 +6,8 @@ from .models import Complaint
 
 # Custom ModelAdmin filtering complaints by department of the admin site
 class DepartmentComplaintAdmin(admin.ModelAdmin):
-    list_display = ('ticket_id', 'user', 'description', 'status', 'created_at')
+    list_display = ('ticket_id', 'student', 'description', 'status', 'created_at')
+
     list_filter = ('status',)
 
     def get_queryset(self, request):
