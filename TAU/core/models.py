@@ -2,41 +2,45 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+DEPARTMENT_CHOICES = [
+    ('Finance', 'Finance'),
+    ('Hostel', 'Hostel'),
+    ('Mess', 'Mess'),
+    ('Academics', 'Academics'),
+    ('Others', 'Others'),
+    ('Gate Pass', 'Gate Pass'),
+]
+
 class Department(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
-class StudentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
+    is_admin = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.username} Profile"
-
-class DepartmentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.user.username} DeptProfile"
+        return f"{self.user.username}'s Profile"
 
 class Complaint(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
         ('Resolved', 'Resolved'),
+        ('Rejected', 'Rejected'),
     ]
 
     ticket_id = models.CharField(max_length=20, unique=True, blank=True)
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='complaints')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='complaints')
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    subject = models.CharField(max_length=200)
-    attachment = models.FileField(upload_to='complaints/', null=True, blank=True)
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    created_at = models.DateTimeField(default=timezone.now)
+    attachment = models.FileField(upload_to='attachments/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if not self.ticket_id:
@@ -47,13 +51,13 @@ class Complaint(models.Model):
                 try:
                     last_num = int(latest.ticket_id.split('-')[-1])
                     next_id = last_num + 1
-                except Exception:
+                except ValueError:
                     pass
             self.ticket_id = f"{prefix}-{next_id:04d}"
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.ticket_id} - {self.subject}"
+        return f"{self.ticket_id} - {self.department}"
 
 class AuditLog(models.Model):
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='audit_logs')

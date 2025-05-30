@@ -15,20 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from django.urls import include
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
+from core.admin import (
+    finance_admin_site,
+    hostel_admin_site,
+    mess_admin_site,
+    academics_admin_site,
+    others_admin_site,
+    gatepass_admin_site,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-   
-
-
     path('student/', include('Student.urls')),        # all student URLs prefixed by /student/
     path('department/', include('dept_admin.urls')),  # all admin URLs prefixed by /department/
-
-
-
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # Department-specific admin sites with unique namespaces
+    path('finance-admin/', finance_admin_site.urls, name='finance_admin_site'),
+    path('hostel-admin/', hostel_admin_site.urls, name='hostel_admin_site'),
+    path('mess-admin/', mess_admin_site.urls, name='mess_admin_site'),
+    path('academics-admin/', academics_admin_site.urls, name='academics_admin_site'),
+    path('others-admin/', others_admin_site.urls, name='others_admin_site'),
+    path('gatepass-admin/', gatepass_admin_site.urls, name='gatepass_admin_site'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

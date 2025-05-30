@@ -6,22 +6,20 @@ from django.dispatch import receiver
 DEPARTMENT_CHOICES = [
     ('Finance', 'Finance'),
     ('Hostel', 'Hostel'),
-    ('Mess', 'Mess'),
+    ('Gatepass', 'Gatepass'),
     ('Academics', 'Academics'),
     ('Others', 'Others'),
 ]
 
 
 class Department(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, choices=DEPARTMENT_CHOICES)
 
     def __str__(self):
         return self.name
 
 
 class Complaint(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='student_complaints')
-
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
@@ -29,7 +27,8 @@ class Complaint(models.Model):
         ('Rejected', 'Rejected'),
     ]
 
-    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='student_complaints')
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
     description = models.TextField()
     ticket_id = models.CharField(max_length=20, unique=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
@@ -38,36 +37,13 @@ class Complaint(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ticket_id:
-            prefix = self.department[:3].upper()
+            prefix = self.department.name[:3].upper()
             for count in range(1, 10000):
                 potential_id = f"{prefix}{count:03}"
                 if not Complaint.objects.filter(ticket_id=potential_id).exists():
                     self.ticket_id = potential_id
                     break
-        from django.db import transaction, IntegrityError
-        try:
-            with transaction.atomic():
-                super().save(*args, **kwargs)
-        except IntegrityError:
-            self.ticket_id = None
-            return self.save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.ticket_id} - {self.department}"
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_app_profile')
-    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
-    is_admin = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.user.username}'s Profile"
-
-
-@receiver(post_save, sender=User)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-    else:
-        instance.core_student_profile.save()
+        return f"{self.ticket_id} - {self.department.name}"

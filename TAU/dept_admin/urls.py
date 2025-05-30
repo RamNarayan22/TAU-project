@@ -1,7 +1,5 @@
 from django.urls import path
-from .views import login_view, dashboard, update_complaint, export_csv
-
-
+from . import views
 from .admin_sites import (
     finance_admin_site,
     hostel_admin_site,
@@ -11,17 +9,20 @@ from .admin_sites import (
     gatepass_admin_site,
 )
 
-urlpatterns = [
-    path('', login_view, name='login'),
-    path('dashboard/',dashboard, name='department_dashboard'),
-    path('update/<int:complaint_id>/', update_complaint, name='update_complaint'),
-    path('dashboard/export-csv/', export_csv, name='export_csv'),
+app_name = 'dept_admin'
 
-    # Department admin sites
-    path('finance/', finance_admin_site.urls),
-    path('hostel/', hostel_admin_site.urls),
-    path('mess/', mess_admin_site.urls),
-    path('academics/', academics_admin_site.urls),
-    path('others/', others_admin_site.urls),
-    path('gatepass/', gatepass_admin_site.urls),
+urlpatterns = [
+    path('login/', views.dept_admin_login, name='login'),
+    path('logout/', views.dept_admin_logout, name='logout'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('complaint/<int:complaint_id>/update/', views.update_complaint, name='update_complaint'),
+    path('export/', views.export_complaints, name='export_complaints'),
+
+    # Department admin sites with unique namespaces
+    path('finance/', finance_admin_site.urls, name='finance_admin'),
+    path('hostel/', hostel_admin_site.urls, name='hostel_admin'),
+    path('mess/', mess_admin_site.urls, name='mess_admin'),
+    path('academics/', academics_admin_site.urls, name='academics_admin'),
+    path('others/', others_admin_site.urls, name='others_admin'),
+    path('gatepass/', gatepass_admin_site.urls, name='gatepass_admin'),
 ]

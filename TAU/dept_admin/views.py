@@ -1,66 +1,98 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from core.models import Complaint, AuditLog
-from core.utils import send_status_notification
-from .forms import UpdateComplaintForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from core.models import Complaint, AuditLog, Profile
 from datetime import datetime
 from django.http import HttpResponse
 import csv
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from core.models import Complaint
+from .forms import UpdateComplaintForm
 
-@login_required
-def dashboard(request):
-    user = request.user
-    dept = user.profile.department
-    if not user.is_staff or not user.profile.is_admin:
-        return redirect('student_dashboard')
+def dept_admin_login(request):
+    if request.user.is_authenticated:
+        if hasattr(request.user, 'profile') and request.user.profile.is_admin:
+            return redirect('dept_admin:dashboard')
+        return redirect('student:dashboard')
 
-    complaints = Complaint.objects.filter(department=dept)
-    return render(request, 'department_dashboard.html', {'complaints': complaints, 'department': dept})
-
-@login_required
-def update_complaint(request, ticket_id):
-    complaint = get_object_or_404(Complaint, ticket_id=ticket_id)
-    if request.method == 'POST':
-        status = request.POST.get('status')
-        if status in dict(Complaint.STATUS_CHOICES).keys():
-            complaint.status = status
-            complaint.save()
-            return redirect('department_dashboard')
-    return render(request, 'dept_admin/update_complaint.html', {'complaint': complaint})
-
-@login_required
-def export_csv(request):
-    dept = request.user.core_profile.department
-    complaints = Complaint.objects.filter(department=dept)
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="complaints.csv"'
-    writer = csv.writer(response)
-    writer.writerow(['Ticket ID', 'Description', 'Status', 'Created At', 'SLA Due'])
-    for c in complaints:
-        writer.writerow([c.ticket_id, c.description, c.status, c.created_at, c.sla_due])
-    return response
-
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-
-# from django.shortcuts import render, redirect
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-
-def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user is not None:
+        
+        if user is not None and hasattr(user, 'profile') and user.profile.is_admin:
             login(request, user)
-            if hasattr(user, 'core_profile') and user.is_staff and user.core_profile.department:
-                return redirect('dashboard')  # Department admin dashboard
-            else:
-                return redirect('student_dashboard')  # Student dashboard
+            return redirect('dept_admin:dashboard')
         else:
-            messages.error(request, 'Invalid username or password')
-    return render(request, 'loginn.html')
+            messages.error(request, 'Invalid credentials or insufficient permissions')
+    
+    return render(request, 'dept_admin/login.html')
+
+@login_required
+def dept_admin_logout(request):
+    logout(request)
+    return redirect('dept_admin:login')
+
+@login_required
+def dashboard(request):
+    if not request.user.profile.is_admin:
+        messages.error(request, 'Access denied. Department admin privileges required.')
+        return redirect('dept_admin:login')
+    
+    complaints = Complaint.objects.filter(department=request.user.profile.department)
+    context = {
+        'complaints': complaints,
+        'department': request.user.profile.department
+    }
+    return render(request, 'dept_admin/dashboard.html', context)
+
+@login_required
+def update_complaint(request, complaint_id):
+    if not request.user.profile.is_admin:
+        messages.error(request, 'Access denied. Department admin privileges required.')
+        return redirect('dept_admin:login')
+
+    complaint = get_object_or_404(Complaint, id=complaint_id, department=request.user.profile.department)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Complaint.STATUS_CHOICES):
+            old_status = complaint.status
+            complaint.status = new_status
+            complaint.save()
+            
+            # Create audit log
+            AuditLog.objects.create(
+                complaint=complaint,
+                performed_by=request.user,
+                action=f'Status changed from {old_status} to {new_status}'
+            )
+            
+            messages.success(request, 'Complaint status updated successfully')
+            return redirect('dept_admin:dashboard')
+    
+    return render(request, 'dept_admin/update_complaint.html', {'complaint': complaint})
+
+@login_required
+def export_complaints(request):
+    if not request.user.profile.is_admin:
+        messages.error(request, 'Access denied. Department admin privileges required.')
+        return redirect('dept_admin:login')
+
+    complaints = Complaint.objects.filter(department=request.user.profile.department)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{request.user.profile.department}_complaints.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Ticket ID', 'Student', 'Description', 'Status', 'Created At'])
+    
+    for complaint in complaints:
+        writer.writerow([
+            complaint.ticket_id,
+            complaint.user.username if complaint.user else 'Anonymous',
+            complaint.description,
+            complaint.status,
+            complaint.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+    
+    return response

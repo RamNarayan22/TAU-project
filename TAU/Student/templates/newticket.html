@@ -35,6 +35,8 @@
   label {
     display: block;
     margin: 10px 0 5px;
+    font-weight: bold;
+    color: #333;
   }
 
   input[type="text"],
@@ -48,6 +50,10 @@
     box-sizing: border-box;
   }
 
+  select {
+    background-color: white;
+  }
+
   button {
     background-color: #5cb85c;
     color: white;
@@ -55,6 +61,8 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    width: 100%;
+    font-size: 16px;
   }
 
   button:hover {
@@ -67,6 +75,17 @@
     background-color: #e7f3fe;
     border: 1px solid #b3d7ff;
     border-radius: 4px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .errorlist {
+    color: #dc3545;
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;
   }
 </style>
 
@@ -83,20 +102,41 @@
   <form id="complaintForm" method="POST" enctype="multipart/form-data" autocomplete="off">
     {% csrf_token %}
     
-    <label for="department">Department:</label>
-    <select id="department" name="department" required>
-      <option value="Finance">Finance</option>
-      <option value="Hostel">Hostel</option>
-      <option value="Mess">Mess</option>
-      <option value="Academics">Academics</option>
-      <option value="Others">Others</option>
-    </select>
+    <div class="form-group">
+      <label for="{{ form.department.id_for_label }}">Department:</label>
+      {{ form.department }}
+      {% if form.department.errors %}
+        <ul class="errorlist">
+          {% for error in form.department.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
 
-    <label for="description">Description:</label>
-    <textarea id="description" name="description" required></textarea>
+    <div class="form-group">
+      <label for="{{ form.description.id_for_label }}">Description:</label>
+      {{ form.description }}
+      {% if form.description.errors %}
+        <ul class="errorlist">
+          {% for error in form.description.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
 
-    <label for="attachment">Attachment:</label>
-    <input type="file" id="attachment" name="attachment" accept="image/*" />
+    <div class="form-group">
+      <label for="{{ form.attachment.id_for_label }}">Attachment:</label>
+      {{ form.attachment }}
+      {% if form.attachment.errors %}
+        <ul class="errorlist">
+          {% for error in form.attachment.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
 
     <button type="submit">Submit Complaint</button>
   </form>

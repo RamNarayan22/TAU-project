@@ -2,8 +2,12 @@ from django.contrib import admin
 from core.models import Complaint
 
 class DepartmentComplaintAdmin(admin.ModelAdmin):
-    list_display = ('ticket_id', 'student', 'description', 'status', 'created_at')
+    list_display = ('ticket_id', 'get_student', 'description', 'status', 'created_at')
     list_filter = ('status',)
+
+    def get_student(self, obj):
+        return obj.user.username if obj.user else '-'
+    get_student.short_description = 'Student'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

@@ -6,9 +6,13 @@ from .models import Complaint
 
 # Custom ModelAdmin filtering complaints by department of the admin site
 class DepartmentComplaintAdmin(admin.ModelAdmin):
-    list_display = ('ticket_id', 'student', 'description', 'status', 'created_at')
+    list_display = ('ticket_id', 'get_student', 'description', 'status', 'created_at')
 
     list_filter = ('status',)
+
+    def get_student(self, obj):
+        return obj.user.username if obj.user else '-'
+    get_student.short_description = 'Student'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -23,7 +27,13 @@ class BaseDepartmentAdminSite(AdminSite):
 
     def has_permission(self, request):
         # Only staff users can access
-        return request.user.is_active and request.user.is_staff
+        return (
+            request.user.is_active and 
+            request.user.is_staff and
+            hasattr(request.user, 'profile') and
+            request.user.profile.department and
+            request.user.profile.department.name == self.department_name
+        )
 
     def each_context(self, request):
         context = super().each_context(request)
