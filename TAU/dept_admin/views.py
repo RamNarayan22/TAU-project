@@ -39,9 +39,18 @@ def dashboard(request):
         return redirect('dept_admin:login')
     
     complaints = Complaint.objects.filter(department=request.user.profile.department)
+    
+    # Get counts for different statuses
+    pending_count = complaints.filter(status='Pending').count()
+    in_progress_count = complaints.filter(status='In Progress').count()
+    resolved_count = complaints.filter(status='Resolved').count()
+    
     context = {
         'complaints': complaints,
-        'department': request.user.profile.department
+        'department': request.user.profile.department,
+        'pending_count': pending_count,
+        'in_progress_count': in_progress_count,
+        'resolved_count': resolved_count
     }
     return render(request, 'dept_admin/dashboard.html', context)
 

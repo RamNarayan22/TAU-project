@@ -1,15 +1,13 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-        
 
 from .forms import ComplaintForm
-
-from .models import Complaint  # Assuming you have a Complaint model
+from core.models import Complaint  # Import from core instead of local models
 
 
 
@@ -73,8 +71,6 @@ def nt(request):
         if form.is_valid():
             complaint = form.save(commit=False)
             complaint.user = request.user
-            complaint.ticket_id = generate_ticket_id(complaint.department.name)
-            complaint.sla_due = calculate_sla_due()
             complaint.save()
             request.session['ticket_id'] = complaint.ticket_id
             return redirect('landingpage')

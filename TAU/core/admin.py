@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.db import transaction
 
 from .models import Complaint, Department, Profile, AuditLog
 
@@ -17,16 +18,24 @@ class DepartmentFacultyCreationForm(UserCreationForm):
         fields = UserCreationForm.Meta.fields + ('email', 'first_name', 'last_name')
 
     def save(self, commit=True):
-        user = super().save(commit=False)
-        user.is_staff = True
-        if commit:
-            user.save()
-            Profile.objects.create(
-                user=user,
-                department=self.cleaned_data['department'],
-                is_admin=self.cleaned_data['is_admin']
-            )
-        return user
+        with transaction.atomic():
+            user = super().save(commit=False)
+            user.is_staff = True
+            if commit:
+                user.save()
+                # Create or update profile
+                profile, created = Profile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'department': self.cleaned_data['department'],
+                        'is_admin': self.cleaned_data['is_admin']
+                    }
+                )
+                if not created:
+                    profile.department = self.cleaned_data['department']
+                    profile.is_admin = self.cleaned_data['is_admin']
+                    profile.save()
+            return user
 
 # Inline admin for Profile
 class ProfileInline(admin.StackedInline):
