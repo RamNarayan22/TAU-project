@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="left-section">
+        <div class="hero-content">
+            <h1>Student Registration</h1>
+            <p>Create your account to access the student complaint management system and start your journey with us.</p>
+        </div>
+    </div>
+    
+    <div class="right-section">
+        <div class="register-container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" action="{% url 'student:register' %}" novalidate id="registerForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}" class="required-field">First Name</label>
+                    <div class="input-container">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ form.first_name }}
+                    </div>
+                    {% if form.first_name.errors %}
+                        <div class="error-message">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}" class="required-field">Last Name</label>
+                    <div class="input-container">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ form.last_name }}
+                    </div>
+                    {% if form.last_name.errors %}
+                        <div class="error-message">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}" class="required-field">Email Address</label>
+                    <div class="input-container">
+                        <i class="fas fa-envelope input-icon"></i>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                        <div class="error-message">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password1.id_for_label }}" class="required-field">Password</label>
+                    <div class="input-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ form.password1 }}
+                        <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('{{ form.password1.id_for_label }}', this)"></i>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-meter" id="strength-meter"></div>
+                        <p class="strength-text" id="strength-text"></p>
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="error-message">{{ form.password1.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password2.id_for_label }}" class="required-field">Confirm Password</label>
+                    <div class="input-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ form.password2 }}
+                        <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('{{ form.password2.id_for_label }}', this)"></i>
+                    </div>
+                    <p class="password-match" id="password-match"></p>
+                    {% if form.password2.errors %}
+                        <div class="error-message">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="register-button" id="submit-button">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+            
+            <p class="login-link">
+                Already have an account? 
+                <a href="{% url 'student:loginn' %}">Sign In Here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    }
+}
+
+function checkPasswordStrength(password) {
+    const strengthMeter = document.getElementById('strength-meter');
+    const strengthText = document.getElementById('strength-text');
+    
+    // Reset the meter
+    strengthMeter.className = 'strength-meter';
+    
+    if (!password || password.length === 0) {
+        strengthMeter.style.width = '0%';
+        strengthText.textContent = '';
+        return 0;
+    }
+    
+    let strength = 0;
+    
+    // Check password length
+    if (password.length >= 8) strength += 25;
+    
+    // Check for mixed case characters
+    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 25;
+    
+    // Check for numbers
+    if (password.match(/\d/)) strength += 25;
+    
+    // Check for special characters
+    if (password.match(/[^a-zA-Z\d]/)) strength += 25;
+    
+    strengthMeter.style.width = strength + '%';
+    
+    if (strength < 25) {
+        strengthMeter.className += ' weak';
+        strengthText.textContent = 'Weak password';
+    } else if (strength < 50) {
+        strengthMeter.className += ' fair';
+        strengthText.textContent = 'Fair password';
+    } else if (strength < 75) {
+        strengthMeter.className += ' good';
+        strengthText.textContent = 'Good password';
+    } else {
+        strengthMeter.className += ' strong';
+        strengthText.textContent = 'Strong password';
+    }
+    
+    return strength;
+}
+
+function validateForm() {
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    const matchText = document.getElementById('password-match');
+    const submitButton = document.getElementById('submit-button');
+    
+    if (!password1 || !password2) {
+        console.error('Password fields not found');
+        return;
+    }
+    
+    const strength = checkPasswordStrength(password1.value);
+    
+    // Check if passwords match
+    if (password2.value.length > 0) {
+        if (password1.value === password2.value) {
+            matchText.textContent = 'Passwords match';
+            matchText.className = 'password-match match';
+        } else {
+            matchText.textContent = 'Passwords do not match';
+            matchText.className = 'password-match no-match';
+        }
+    } else {
+        matchText.textContent = '';
+        matchText.className = 'password-match';
+    }
+    
+    // Enable submit button only if passwords match and password is strong enough
+    submitButton.disabled = (password1.value !== password2.value) || 
+                          (strength < 25) || 
+                          !password1.value || 
+                          !password2.value;
+}
+
+// Add form submission handler
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    
+    if (!password1 || !password2) {
+        console.error('Password fields not found');
+        e.preventDefault();
+        return;
+    }
+    
+    const strength = checkPasswordStrength(password1.value);
+    
+    if (!password1.value || !password2.value) {
+        e.preventDefault();
+        alert('Please fill in both password fields.');
+        return;
+    }
+    
+    if (password1.value !== password2.value) {
+        e.preventDefault();
+        alert('Passwords do not match.');
+        return;
+    }
+    
+    if (strength < 25) {
+        e.preventDefault();
+        alert('Please choose a stronger password.');
+        return;
+    }
+});
+
+// Initial form validation
+document.addEventListener('DOMContentLoaded', function() {
+    validateForm();
+    
+    // Add input event listeners to password fields
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    
+    if (password1 && password2) {
+        password1.addEventListener('input', validateForm);
+        password2.addEventListener('input', validateForm);
+    } else {
+        console.error('Password fields not found');
+    }
+});
+</script>
+{% endblock %}

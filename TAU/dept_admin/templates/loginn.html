@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<style>
+  body {
+    background: linear-gradient(to right, #e2e3e3, #dbdadf, #b1afae);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    display: flex;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    max-width: 800px;
+    width: 80%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .left-panel {
+    flex: 1;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .left-panel img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .right-panel {
+    flex: 1;
+    padding: 60px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .login-form {
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+  }
+
+  .login-form img.logo {
+    width: 80px;
+    margin-bottom: 20px;
+  }
+
+  .login-form h2 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #333;
+  }
+
+  .login-form input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+
+  .login-form button {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .login-form button:hover {
+    background: #556cd6;
+  }
+
+  .forgot-link {
+    display: block;
+    text-align: right;
+    margin-top: 10px;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .forgot-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+
+    .left-panel,
+    .right-panel {
+      width: 100%;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .left-panel img {
+      max-width: 80%;
+    }
+
+    .login-form img.logo {
+      width: 60px;
+    }
+
+    .login-form {
+      max-width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="left-panel">
+    <img src="{% static 'apollo.jpg' %}" alt="Apollo Image">
+  </div>
+  <div class="right-panel">
+    <form method="POST" class="login-form" action="{% url 'dept_admin:login' %}">
+      {% csrf_token %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      <img src="{% static 'Screenshot 2025-05-16 215851.png' %}" alt="Apollo Logo" class="logo">
+      <h2>DEPARTMENT LOGIN</h2>
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Sign In</button>
+      {% comment %} <a href="{% url 'password_reset' %}" class="forgot-link">Forgot Password?</a> {% endcomment %}
+    </form>
+  </div>
+</div>
+
+<script>
+  // Ensure CSRF token is set for AJAX requests
+  document.addEventListener('DOMContentLoaded', function() {
+    const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    if (csrftoken) {
+      const xhr = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function() {
+        xhr.apply(this, arguments);
+        this.setRequestHeader('X-CSRFToken', csrftoken);
+      };
+    }
+  });
+</script>
+{% endblock %}

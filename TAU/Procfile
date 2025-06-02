@@ -1,0 +1,1 @@
+web: gunicorn TAU.wsgi:application --log-file - 

@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Department Dashboard{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        background: white;
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .logout-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--danger), #ef4444);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .logout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            margin: 1rem auto;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 1rem;
+        }
+
+        .header-right {
+            justify-content: flex-end;
+        }
+
+        .logout-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    h1 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+    }
+
+    .welcome-message {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+    }
+
+    .welcome-message h2 {
+        color: var(--primary);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .welcome-message p {
+        color: var(--gray-600);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .department-info {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .department-info h2 {
+        color: var(--primary);
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .info-item {
+        padding: 1.5rem;
+        background: var(--gray-50);
+        border-radius: 0.5rem;
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-item h3 {
+        font-size: 1rem;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-item i {
+        color: var(--primary);
+    }
+
+    .info-item p {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Department Dashboard</h1>
+        <div class="header-right">
+            <form method="POST" action="{% url 'dept_admin:logout' %}" id="logoutForm" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="welcome-message">
+        <h2>Welcome to the Department Dashboard</h2>
+        <p>This is your central hub for managing department activities. The dashboard has been streamlined for better focus and efficiency.</p>
+    </div>
+
+    <div class="department-info">
+        <h2>Department Information</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <h3><i class="fas fa-building"></i> Department Name</h3>
+                <p>{{ request.user.profile.department.name }}</p>
+            </div>
+            <div class="info-item">
+                <h3><i class="fas fa-user-shield"></i> Department Admin</h3>
+                <p>{{ request.user.get_full_name|default:request.user.username }}</p>
+            </div>
+            <div class="info-item">
+                <h3><i class="fas fa-clock"></i> Last Login</h3>
+                <p>{{ request.user.last_login|date:"F j, Y, g:i a" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects for info items
+        const infoItems = document.querySelectorAll('.info-item');
+        infoItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Add confirmation for logout
+        const logoutForm = document.getElementById('logoutForm');
+        logoutForm.addEventListener('submit', function(e) {
+            const confirmed = confirm('Are you sure you want to logout?');
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

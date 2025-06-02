@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        color: #1a1a1a;
+        line-height: 1.6;
+    }
+
+    header {
+        background: linear-gradient(135deg, #1e40af, #3b82f6);
+        color: white;
+        padding: 1.25rem 2.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo img {
+        width: 120px;
+        height: auto;
+        transition: transform 0.3s ease;
+    }
+
+    .logo img:hover {
+        transform: scale(1.05);
+    }
+
+    nav a {
+        color: white;
+        margin-left: 1.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom, 1rem));
+    }
+
+    .welcome {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 700;
+        margin: 1rem 0 1.5rem;
+        color: #1e40af;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-number {
+        font-size: clamp(2rem, 6vw, 3rem);
+        font-weight: 700;
+        background: linear-gradient(135deg, #1e40af, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #4b5563;
+    }
+
+    .actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn {
+        background: linear-gradient(135deg, #1e40af, #3b82f6);
+        color: white;
+        padding: 1rem;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 3rem;
+    }
+
+    .btn:hover {
+        background: linear-gradient(135deg, #1e3a8a, #2563eb);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .recent-complaints {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+
+    .recent-complaints h2 {
+        color: #1e40af;
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .ticket-info {
+        margin-top: 1rem;
+        padding: 1.25rem;
+        background-color: #f0f9ff;
+        border-left: 5px solid #3b82f6;
+        border-radius: 0.5rem;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    .ticket-info h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #1e40af;
+    }
+
+    .ticket-info p {
+        margin: 0.5rem 0;
+        font-size: 0.875rem;
+        color: #4b5563;
+    }
+
+    .ticket-info p strong {
+        color: #1e40af;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .error-message {
+        background-color: #fee2e2;
+        border-left: 5px solid #ef4444;
+        color: #991b1b;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+        header {
+            padding: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        nav {
+            display: none; /* Hide top navigation on mobile since we have bottom nav */
+        }
+
+        .welcome {
+            text-align: center;
+        }
+
+        .btn {
+            font-size: 0.875rem;
+            padding: 0.75rem;
+        }
+
+        .recent-complaints {
+            padding: 1rem;
+        }
+
+        .ticket-info {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        main {
+            padding: 1rem;
+        }
+
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+
+        .actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+        }
+    }
+
+    /* Safe area adjustments for mobile devices */
+    @supports (padding: max(0px)) {
+        main {
+            padding-left: max(1rem, env(safe-area-inset-left));
+            padding-right: max(1rem, env(safe-area-inset-right));
+            padding-bottom: max(4rem, env(safe-area-inset-bottom) + 4rem);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header>
+    <div class="logo">
+        <img src="{% static 'css/image.png' %}" alt="Apollo University Logo">
+    </div>
+    <nav class="desktop-nav">
+        <a href="{% url 'student:logout' %}" title="Logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </nav>
+</header>
+
+<main>
+    <div class="welcome">Welcome, <span id="student-name">{{ student_name|default:"Student" }}</span>! 👋</div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="{% if message.tags == 'error' %}error-message{% else %}ticket-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-number" id="total-complaints">{{ total|default:"0" }}</div>
+            <div class="stat-label">Total Complaints</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="pending-complaints">{{ pending|default:"0" }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="resolved-complaints">{{ resolved|default:"0" }}</div>
+            <div class="stat-label">Resolved</div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'student:nt' %}" class="btn">
+            <i class="fas fa-plus-circle"></i> Raise a Complaint
+        </a>
+    </div>
+
+    <section class="recent-complaints">
+        <h2>Recent Complaints</h2>
+        {% if recent_complaints %}
+            {% for complaint in recent_complaints %}
+                <div class="ticket-info">
+                    <h3>Ticket ID: {{ complaint.ticket_id }}</h3>
+                    <p>{{ complaint.description|truncatewords:50 }}</p>
+                    <p><strong>Status:</strong> {{ complaint.status }}</p>
+                    <p><strong>Created:</strong> {{ complaint.created_at|date:"F j, Y, g:i a" }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-state">No recent complaints found.</p>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
+<div class="container">
+    <div class="update-complaint">
+        <div class="card">
+            <div class="card-header">
+                <h2>Update Complaint Status</h2>
+                <a href="{% url 'dept_admin:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+            <div class="card-body">
+                <div class="complaint-details">
+                    <p><strong>Ticket ID:</strong> {{ complaint.ticket_id }}</p>
+                    <p><strong>Student:</strong> {{ complaint.user.username }}</p>
+                    <p><strong>Description:</strong> {{ complaint.description }}</p>
+                    <p><strong>Current Status:</strong> 
+                        <span class="status-badge status-{{ complaint.status|lower }}">
+                            {{ complaint.status }}
+                        </span>
+                    </p>
+                    <p><strong>Created At:</strong> {{ complaint.created_at|date:"M d, Y H:i" }}</p>
+                    {% if complaint.attachment %}
+                    <p><strong>Attachment:</strong> <a href="{{ complaint.attachment.url }}" target="_blank">View Attachment</a></p>
+                    {% endif %}
+                </div>
+
+                <form method="post" class="update-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="status">Update Status:</label>
+                        <select name="status" id="status" class="form-control" required>
+                            <option value="">Select Status</option>
+                            <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if complaint.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                            <option value="Rejected" {% if complaint.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.update-complaint {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    padding: 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.complaint-details {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.complaint-details p {
+    margin-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+}
+
+.status-pending {
+    background-color: #ffeeba;
+    color: #856404;
+}
+
+.status-in-progress {
+    background-color: #b8daff;
+    color: #004085;
+}
+
+.status-resolved {
+    background-color: #c3e6cb;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f5c6cb;
+    color: #721c24;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="{% static 'css/image.png' %}" alt="Department Logo" class="dept-logo">
+            <h3>{{ department }}</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="#complaints"><i class="fas fa-ticket-alt"></i> Complaints</a>
+            <a href="#reports"><i class="fas fa-chart-bar"></i> Reports</a>
+            <form method="POST" action="{% url 'dept_admin:logout' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: #ecf0f1; padding: 12px 20px; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="header-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search complaints..." id="searchComplaints">
+            </div>
+            <div class="header-profile">
+                <span class="welcome-text">Welcome, {{ request.user.first_name|default:request.user.username }}</span>
+                <div class="profile-image">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Total Complaints</h3>
+                    <p class="stat-number">{{ complaints.count }}</p>
+                    <span class="stat-label">All Time</span>
+                </div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Pending</h3>
+                    <p class="stat-number">{{ pending_count }}</p>
+                    <span class="stat-label">Require Action</span>
+                </div>
+            </div>
+            <div class="stat-card progress">
+                <div class="stat-icon">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>In Progress</h3>
+                    <p class="stat-number">{{ in_progress_count }}</p>
+                    <span class="stat-label">Being Handled</span>
+                </div>
+            </div>
+            <div class="stat-card resolved">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Resolved</h3>
+                    <p class="stat-number">{{ resolved_count }}</p>
+                    <span class="stat-label">Completed</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Complaints Section -->
+        <div class="complaints-section" id="complaints">
+            <div class="section-header">
+                <div class="header-left">
+                    <h2><i class="fas fa-ticket-alt"></i> Recent Complaints</h2>
+                    <span class="subtitle">Manage and track department complaints</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="window.location.href='{% url 'dept_admin:export_complaints' %}'">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="complaints-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> Ticket ID</th>
+                            <th><i class="fas fa-user"></i> Student</th>
+                            <th><i class="fas fa-comment"></i> Description</th>
+                            <th><i class="fas fa-info-circle"></i> Status</th>
+                            <th><i class="fas fa-calendar"></i> Created At</th>
+                            <th><i class="fas fa-cog"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in complaints %}
+                        <tr>
+                            <td><span class="ticket-id">{{ complaint.ticket_id }}</span></td>
+                            <td>{{ complaint.user.username }}</td>
+                            <td>{{ complaint.description|truncatechars:100 }}</td>
+                            <td>
+                                <span class="status-badge status-{{ complaint.status|lower }}">
+                                    <i class="fas fa-circle"></i> {{ complaint.status }}
+                                </span>
+                            </td>
+                            <td>{{ complaint.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'dept_admin:update_complaint' complaint.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> Update
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No complaints found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modern Dashboard Styles */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background: #2c3e50;
+    color: white;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+}
+
+.sidebar-header {
+    padding: 0 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.dept-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav a {
+    color: #ecf0f1;
+    padding: 12px 20px;
+    text-decoration: none;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-nav a:hover, .sidebar-nav a.active {
+    background: #34495e;
+    color: #fff;
+}
+
+.sidebar-nav i {
+    width: 20px;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 20px;
+}
+
+/* Top Header Styles */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-search {
+    position: relative;
+    width: 300px;
+}
+
+.header-search input {
+    width: 100%;
+    padding: 10px 15px 10px 35px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.header-search i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.header-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.welcome-text {
+    font-weight: 500;
+}
+
+.profile-image i {
+    font-size: 2em;
+    color: #2c3e50;
+}
+
+/* Statistics Cards Styles */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.stat-card.total .stat-icon {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.stat-card.pending .stat-icon {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.stat-card.progress .stat-icon {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.stat-card.resolved .stat-icon {
+    background: #e8eaf6;
+    color: #3f51b5;
+}
+
+.stat-details h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px 0;
+    color: #2c3e50;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Complaints Section Styles */
+.complaints-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-left h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2c3e50;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+}
+
+.btn-outline {
+    border: 1px solid #2c3e50;
+    background: transparent;
+    color: #2c3e50;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-outline:hover {
+    background: #2c3e50;
+    color: white;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.table th {
+    background: #f8f9fa;
+    padding: 12px;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: left;
+}
+
+.table td {
+    padding: 12px;
+    background: white;
+}
+
+.table tr:hover td {
+    background: #f8f9fa;
+}
+
+.ticket-id {
+    font-family: monospace;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge i {
+    font-size: 8px;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-in-progress {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-resolved {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background: #2c3e50;
+    color: white;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: #34495e;
+}
+</style>
+
+<script>
+document.getElementById('searchComplaints').addEventListener('input', function(e) {
+    const searchText = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchText) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %} 

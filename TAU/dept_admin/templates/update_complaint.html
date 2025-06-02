@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Update Complaint Status{% endblock %}
+
+{% block content %}
+<style>
+  .form-container {
+    max-width: 500px;
+    margin: 3rem auto;
+    background: #f9f9f9;
+    padding: 2rem 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  h2 {
+    margin-bottom: 1.5rem;
+    color: #34495e;
+    text-align: center;
+  }
+  form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  select, button {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1.2rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  button {
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #1c5980;
+  }
+  .cancel-link {
+    display: block;
+    text-align: center;
+    margin-top: -0.8rem;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+  .cancel-link:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="form-container">
+  <h2>Update Complaint Status</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <label for="{{ form.status.id_for_label }}">Status</label>
+    {{ form.status }}
+    {% if form.status.errors %}
+      <div style="color: red;">{{ form.status.errors }}</div>
+    {% endif %}
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <a href="{% url 'dept_admin:dashboard' %}" class="cancel-link">Cancel and return to dashboard</a>
+</div>
+{% endblock %}
