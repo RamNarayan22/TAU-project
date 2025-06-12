@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage SLA Configuration - {{ department.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Manage SLA Configuration</h1>
+        <a href="{% url 'dept_admin:sla_dashboard' %}" class="text-blue-600 hover:text-blue-800">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Current SLA Configurations -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <h2 class="text-xl font-semibold p-6 bg-gray-50 border-b">Current SLA Configurations</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Response Time (hrs)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resolution Time (hrs)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escalation Time (hrs)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for config in sla_configs %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ config.priority|title }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ config.response_time_hours }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ config.resolution_time_hours }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ config.escalation_time_hours }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="editConfig('{{ config.priority }}')" class="text-blue-600 hover:text-blue-800">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit SLA Configuration Form -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <h2 class="text-xl font-semibold p-6 bg-gray-50 border-b">Add/Edit SLA Configuration</h2>
+        <div class="p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-gray-700">Priority Level</label>
+                        <select name="priority" id="priority" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            {% for priority, label in priority_choices %}
+                            <option value="{{ priority }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="response_time" class="block text-sm font-medium text-gray-700">Response Time (hours)</label>
+                        <input type="number" name="response_time" id="response_time" min="1" value="48"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="resolution_time" class="block text-sm font-medium text-gray-700">Resolution Time (hours)</label>
+                        <input type="number" name="resolution_time" id="resolution_time" min="1" value="48"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="escalation_time" class="block text-sm font-medium text-gray-700">Escalation Time (hours)</label>
+                        <input type="number" name="escalation_time" id="escalation_time" min="1" value="24"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        Save Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editConfig(priority) {
+    // Find the configuration row
+    const row = document.querySelector(`tr:has(div:contains('${priority}'))`);
+    if (!row) return;
+
+    // Get the values
+    const responseTime = row.children[1].querySelector('div').textContent;
+    const resolutionTime = row.children[2].querySelector('div').textContent;
+    const escalationTime = row.children[3].querySelector('div').textContent;
+
+    // Set the form values
+    document.getElementById('priority').value = priority.toLowerCase();
+    document.getElementById('response_time').value = responseTime;
+    document.getElementById('resolution_time').value = resolutionTime;
+    document.getElementById('escalation_time').value = escalationTime;
+
+    // Scroll to form
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %} 

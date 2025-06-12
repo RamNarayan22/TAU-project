@@ -32,11 +32,12 @@
             <form method="POST">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="username" class="required-field">Username</label>
+                    <label for="username" class="required-field">Department Admin Username</label>
                     <div class="input-container">
                         <span class="input-icon">👤</span>
-                        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                        <input type="text" id="username" name="username" placeholder="Enter your admin username (not email)" required>
                     </div>
+                    <small class="form-text text-muted">Use your department admin username, not your email address.</small>
                 </div>
                 
                 <div class="form-group">

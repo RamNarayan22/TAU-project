@@ -34,17 +34,28 @@ body {
 /* Left Section Styles */
 .left-section {
     flex: 1;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(rgba(44, 62, 80, 0.85), rgba(52, 152, 219, 0.85)), url('/static/images/apollo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     padding: 3rem 2rem;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
     color: white;
+    text-align: center;
+    position: relative;
 }
 
 .hero-content {
     max-width: 500px;
     margin: 0 auto;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
 .hero-content h1 {
@@ -53,12 +64,14 @@ body {
     font-weight: 700;
     letter-spacing: -0.5px;
     line-height: 1.2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-content p {
     font-size: 1.2rem;
-    opacity: 0.9;
+    opacity: 0.95;
     line-height: 1.6;
+    margin-bottom: 1rem;
 }
 
 /* Right Section Styles */
@@ -69,6 +82,7 @@ body {
     justify-content: center;
     padding: 2rem;
     background-color: white;
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .login-container,

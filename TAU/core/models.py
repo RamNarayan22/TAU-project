@@ -13,6 +13,7 @@ DEPARTMENT_CHOICES = [
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    sla_hours = models.IntegerField(default=48)  # Default SLA time in hours
 
     def __str__(self):
         return self.name
@@ -30,6 +31,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     is_admin = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Escalate Ticket - {{ ticket.ticket_id }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Escalate Ticket</h1>
+        <a href="{% url 'dept_admin:view_ticket' ticket.id %}" class="text-blue-600 hover:text-blue-800">
+            ← Back to Ticket
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Ticket Details</h2>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <p class="text-sm text-gray-600">Ticket ID</p>
+                    <p class="font-medium">{{ ticket.ticket_id }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Status</p>
+                    <p class="font-medium">{{ ticket.status|title }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Priority</p>
+                    <p class="font-medium">{{ ticket.priority|title }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Created</p>
+                    <p class="font-medium">{{ ticket.created_at|ist_format }}</p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-sm text-gray-600">Subject</p>
+                <p class="font-medium">{{ ticket.subject }}</p>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-sm text-gray-600">Description</p>
+                <p class="whitespace-pre-wrap">{{ ticket.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Escalation Form</h2>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label for="reason" class="block text-sm font-medium text-gray-700">Reason for Escalation</label>
+                    <textarea
+                        name="reason"
+                        id="reason"
+                        rows="4"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Please provide a detailed reason for escalating this ticket..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-2">Please note:</p>
+                    <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                        <li>The ticket will be escalated to the General category</li>
+                        <li>You will no longer be the primary owner of this ticket</li>
+                        <li>The original department will be notified</li>
+                        <li>This action cannot be undone</li>
+                    </ul>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a
+                        href="{% url 'dept_admin:view_ticket' ticket.id %}"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                    >
+                        Cancel
+                    </a>
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Escalate Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

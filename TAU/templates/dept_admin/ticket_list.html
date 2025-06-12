@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="tickets-view">
+        <div class="header">
+            <h2>{{ priority|title }} Priority Tickets</h2>
+            <div class="actions">
+                <a href="{% url 'dept_admin:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="{% url 'dept_admin:escalate_priority' priority=priority %}" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Escalate All
+                </a>
+            </div>
+        </div>
+
+        <div class="tickets-table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Ticket ID</th>
+                        <th><i class="fas fa-user"></i> Student</th>
+                        <th><i class="fas fa-comment"></i> Subject</th>
+                        <th><i class="fas fa-info-circle"></i> Status</th>
+                        <th><i class="fas fa-calendar"></i> Created At</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td><span class="ticket-id">{{ ticket.ticket_id }}</span></td>
+                        <td>{{ ticket.student.username }}</td>
+                        <td>{{ ticket.subject|truncatechars:100 }}</td>
+                        <td>
+                            <span class="status-badge status-{{ ticket.status|lower }}">
+                                <i class="fas fa-circle"></i> {{ ticket.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'dept_admin:update_complaint' ticket.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> Update
+                                </a>
+                                <a href="{% url 'dept_admin:escalate_ticket' ticket.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-arrow-up"></i> Escalate
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No {{ priority }} priority tickets found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.container {
+    padding: 2rem;
+}
+
+.tickets-view {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 2rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #2c3e50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #34495e;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-warning {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d68910;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.tickets-table {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    background: #f8f9fa;
+    padding: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: left;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table tr:hover td {
+    background: #f8f9fa;
+}
+
+.ticket-id {
+    font-family: monospace;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-badge i {
+    font-size: 0.6rem;
+}
+
+.status-open {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-in_progress {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-resolved {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-on_hold {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.status-escalated {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+</style>
+{% endblock %} 

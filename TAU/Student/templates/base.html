@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <link rel="icon" href="favicon.png" type="css/image.png>
     <title>{% block title %}Apollo University{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,5 +32,35 @@
 
     
     {% endblock %}
+
+    <script>
+        // Set up CSRF token for AJAX requests
+        document.addEventListener('DOMContentLoaded', function() {
+            const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            if (csrftoken) {
+                // Add CSRF token to all AJAX requests
+                const xhr = new XMLHttpRequest();
+                const open = XMLHttpRequest.prototype.open;
+                XMLHttpRequest.prototype.open = function() {
+                    open.apply(this, arguments);
+                    this.setRequestHeader('X-CSRFToken', csrftoken);
+                };
+                
+                // Add CSRF token to fetch requests
+                const originalFetch = window.fetch;
+                window.fetch = function() {
+                    let [resource, config] = arguments;
+                    if(config === undefined) {
+                        config = {};
+                    }
+                    if(config.headers === undefined) {
+                        config.headers = {};
+                    }
+                    config.headers['X-CSRFToken'] = csrftoken;
+                    return originalFetch(resource, config);
+                };
+            }
+        });
+    </script>
 </body>
 </html>

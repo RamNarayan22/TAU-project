@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/Smain.css' %}">
@@ -265,7 +266,7 @@
 </header>
 
 <main>
-    <div class="welcome">Welcome, <span id="student-name">{{ student_name|default:"Student" }}</span>! 👋</div>
+    <div class="welcome">Welcome, {{ request.user.get_full_name|default:request.user.username }}! 👋</div>
 
     {% if messages %}
         {% for message in messages %}
@@ -304,7 +305,7 @@
                     <h3>Ticket ID: {{ complaint.ticket_id }}</h3>
                     <p>{{ complaint.description|truncatewords:50 }}</p>
                     <p><strong>Status:</strong> {{ complaint.status }}</p>
-                    <p><strong>Created:</strong> {{ complaint.created_at|date:"F j, Y, g:i a" }}</p>
+                    <p><strong>Created:</strong> {{ complaint.created_at|ist_format }}</p>
                 </div>
             {% endfor %}
         {% else %}

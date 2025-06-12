@@ -1,145 +1,122 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Update Ticket - {{ ticket.ticket_id }}{% endblock %}
+
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
-<div class="container">
-    <div class="update-complaint">
-        <div class="card">
-            <div class="card-header">
-                <h2>Update Complaint Status</h2>
-                <a href="{% url 'dept_admin:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Update Ticket</h1>
+        <a href="{% url 'dept_admin:dashboard' %}" class="text-blue-600 hover:text-blue-800">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="mb-8">
+        {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+                {{ message }}
             </div>
-            <div class="card-body">
-                <div class="complaint-details">
-                    <p><strong>Ticket ID:</strong> {{ complaint.ticket_id }}</p>
-                    <p><strong>Student:</strong> {{ complaint.user.username }}</p>
-                    <p><strong>Description:</strong> {{ complaint.description }}</p>
-                    <p><strong>Current Status:</strong> 
-                        <span class="status-badge status-{{ complaint.status|lower }}">
-                            {{ complaint.status }}
-                        </span>
-                    </p>
-                    <p><strong>Created At:</strong> {{ complaint.created_at|date:"M d, Y H:i" }}</p>
-                    {% if complaint.attachment %}
-                    <p><strong>Attachment:</strong> <a href="{{ complaint.attachment.url }}" target="_blank">View Attachment</a></p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="p-6">
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Ticket Details</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Ticket ID</p>
+                        <p class="font-medium">{{ ticket.ticket_id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Created</p>
+                        <p class="font-medium">{{ ticket.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Student</p>
+                        <p class="font-medium">{{ ticket.student.get_full_name|default:ticket.student.username }}</p>
+                    </div>
+                    {% if is_general_dept %}
+                    <div>
+                        <p class="text-sm text-gray-600">Original Department</p>
+                        <p class="font-medium">{{ ticket.original_department.name }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="id_subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                    <p class="mt-1 text-gray-900">{{ ticket.subject }}</p>
+                </div>
+
+                <div>
+                    <label for="id_description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <p class="mt-1 text-gray-900 whitespace-pre-wrap">{{ ticket.description }}</p>
+                </div>
+
+                {% if not is_general_dept %}
+                <div>
+                    <label for="id_priority" class="block text-sm font-medium text-gray-700">Priority</label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.priority.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="id_status" class="block text-sm font-medium text-gray-700">Status</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.status.errors.0 }}</p>
                     {% endif %}
                 </div>
 
-                <form method="post" class="update-form">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="status">Update Status:</label>
-                        <select name="status" id="status" class="form-control" required>
-                            <option value="">Select Status</option>
-                            <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
-                            <option value="In Progress" {% if complaint.status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                            <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
-                            <option value="Rejected" {% if complaint.status == 'Rejected' %}selected{% endif %}>Rejected</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
-                </form>
-            </div>
+                <div>
+                    <label for="id_response" class="block text-sm font-medium text-gray-700">Response</label>
+                    {{ form.response }}
+                    {% if form.response.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.response.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'dept_admin:dashboard' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Update Ticket
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <style>
-.update-complaint {
-    max-width: 800px;
-    margin: 30px auto;
-}
-
-.card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.card-header {
-    padding: 20px;
-    border-bottom: 1px solid #dee2e6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.card-body {
-    padding: 20px;
-}
-
-.complaint-details {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.complaint-details p {
-    margin-bottom: 10px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.form-control {
+select, textarea {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 1em;
+    padding: 0.5rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.375rem;
+    margin-top: 0.25rem;
 }
 
-.status-badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.85em;
+textarea {
+    min-height: 100px;
 }
 
-.status-pending {
-    background-color: #ffeeba;
-    color: #856404;
-}
-
-.status-in-progress {
-    background-color: #b8daff;
-    color: #004085;
-}
-
-.status-resolved {
-    background-color: #c3e6cb;
-    color: #155724;
-}
-
-.status-rejected {
-    background-color: #f5c6cb;
-    color: #721c24;
-}
-
-.btn {
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
+select:focus, textarea:focus {
+    outline: none;
+    border-color: #2563EB;
+    ring: 2px solid #2563EB;
 }
 </style>
 {% endblock %} 

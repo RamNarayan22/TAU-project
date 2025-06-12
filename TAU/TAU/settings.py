@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--vd8j4p^m3%400j(h1pnuf8ekweb^jk=h@9(us@w==+jy4k!&7'
+SECRET_KEY = 'django-insecure-=7!*$_$=7!*$_$=7!*$_$=7!*$_$=7!*$_$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.ForcePasswordChangeMiddleware',
 ]
 
 ROOT_URLCONF = 'TAU.urls'
@@ -115,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -125,12 +126,28 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR.parent, 'static'),
+]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
+# Media files (Uploaded files)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Maximum upload size (5MB)
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB in bytes
+
+# File upload handlers
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+# File upload permissions
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -147,20 +164,25 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 USE_X_FORWARDED_HOST = False
 USE_X_FORWARDED_PORT = False
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REDIRECT_EXEMPT = ['.*']
+SECURE_SSL_HOST = None
+SESSION_COOKIE_SECURE = False
+
+# Additional Security Headers
+SECURE_REFERRER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'DENY'
 
 # CSRF Settings
-CSRF_COOKIE_HTTPONLY = True
-CSRF_USE_SESSIONS = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  # Allow non-HTTPS in development
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access in development
+CSRF_USE_SESSIONS = False  # Use cookies for CSRF in development
+CSRF_COOKIE_SAMESITE = 'Lax'  # Less restrictive for development
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:7000', 'http://localhost:7000']
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://localhost:7000',
-    'http://127.0.0.1:7000',
-]
-CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
 # Session Settings
 SESSION_COOKIE_HTTPONLY = True
@@ -179,3 +201,8 @@ LOGOUT_REDIRECT_URL = 'student:loginn'
 DEPT_ADMIN_LOGIN_URL = 'dept_admin:login'
 DEPT_ADMIN_LOGIN_REDIRECT_URL = 'dept_admin:dashboard'
 DEPT_ADMIN_LOGOUT_REDIRECT_URL = 'dept_admin:login'
+
+# Debug Toolbar Settings
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

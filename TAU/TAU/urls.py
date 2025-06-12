@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.shortcuts import redirect
-from core.admin import (
+from django.shortcuts import redirect, render
+from django.http import HttpResponse
+from django.template import loader
+from dept_admin.admin_sites import (
     finance_admin_site,
     hostel_admin_site,
     mess_admin_site,
@@ -34,6 +36,21 @@ def root_redirect(request):
     """
     # Always redirect to student login page for the root URL
     return redirect('student:loginn')
+
+def custom_403(request, exception=None):
+    """Custom 403 handler to help diagnose permission issues"""
+    context = {
+        'path': request.path,
+        'user': request.user,
+        'is_authenticated': request.user.is_authenticated,
+        'user_profile': getattr(request.user, 'profile', None) if request.user.is_authenticated else None,
+        'exception': str(exception) if exception else 'No exception details available',
+    }
+    template = loader.get_template('403.html')
+    return HttpResponse(template.render(context, request), status=403)
+
+def choose_portal(request):
+    return render(request, 'choose_portal.html')
 
 urlpatterns = [
     # Root URL always redirects to student login
@@ -51,4 +68,11 @@ urlpatterns = [
     path('academics-admin/', academics_admin_site.urls, name='academics_admin_site'),
     path('others-admin/', others_admin_site.urls, name='others_admin_site'),
     path('gatepass-admin/', gatepass_admin_site.urls, name='gatepass_admin_site'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('choose-portal/', choose_portal, name='choose_portal'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+handler403 = custom_403

@@ -2,8 +2,9 @@ from django import forms
 from django.db.models import Min
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from core.models import Complaint, Department
-from .models import DEPARTMENT_CHOICES
+from core.models import Department
+from .models import Ticket, PRIORITY_CHOICES
+import os
 
 class StudentRegistrationForm(UserCreationForm):
     first_name = forms.CharField(
@@ -113,6 +114,15 @@ class ComplaintForm(forms.ModelForm):
         })
     )
     
+    subject = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter a brief subject for your complaint'
+        })
+    )
+    
     description = forms.CharField(
         widget=forms.Textarea(attrs={
             'class': 'form-control',
@@ -124,7 +134,10 @@ class ComplaintForm(forms.ModelForm):
     
     attachment = forms.FileField(
         required=False,
-        widget=forms.FileInput(attrs={'class': 'form-control'})
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png'
+        })
     )
     
     def __init__(self, *args, **kwargs):
@@ -138,14 +151,22 @@ class ComplaintForm(forms.ModelForm):
         ).order_by('name')
     
     class Meta:
-        model = Complaint
-        fields = ['department', 'description', 'attachment']
+        model = Ticket
+        fields = ['department', 'subject', 'description', 'attachment']
         
     def clean_department(self):
         department = self.cleaned_data.get('department')
         if not department:
             raise forms.ValidationError("Please select a department")
         return department
+        
+    def clean_subject(self):
+        subject = self.cleaned_data.get('subject')
+        if not subject:
+            raise forms.ValidationError("Please provide a subject for your complaint")
+        if len(subject) < 5:
+            raise forms.ValidationError("Subject must be at least 5 characters long")
+        return subject
         
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -154,3 +175,17 @@ class ComplaintForm(forms.ModelForm):
         if len(description) < 10:
             raise forms.ValidationError("Description must be at least 10 characters long")
         return description
+
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get('attachment')
+        if attachment:
+            # Check file size (5MB limit)
+            if attachment.size > 5 * 1024 * 1024:  # 5MB in bytes
+                raise forms.ValidationError("File size must be under 5MB")
+            
+            # Check file extension
+            allowed_extensions = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png']
+            ext = os.path.splitext(attachment.name)[1].lower()
+            if ext not in allowed_extensions:
+                raise forms.ValidationError("Only PDF, Word, Text, and Image files are allowed")
+        return attachment

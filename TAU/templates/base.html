@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Apollo University Student Complaint Management System">
-    <meta name="theme-color" content="#1e40af">
+    <meta name="theme-color" content="#2563EB">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <meta name="robots" content="noindex, nofollow">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <title>{% block title %}TAU - Apollo University{% endblock %}</title>
+    <title>{% block title %}Apollo University - Ticket Management System{% endblock %}</title>
     
     {% load static %}
     
@@ -19,7 +19,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     
     <style>
         :root {
@@ -401,37 +402,191 @@
             white-space: nowrap;
             border: 0;
         }
+
+        .logo-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: #2563EB;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            color: white;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #2563EB;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        .active-nav-link::after {
+            transform: scaleX(1);
+        }
+
+        .dropdown-menu {
+            transform-origin: top right;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu[x-cloak] {
+            display: none;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
-<body>
-    <header>
-        <div class="logo">
-            <a href="{% if user.is_staff %}{% url 'dept_admin:dashboard' %}{% else %}{% url 'student:landingpage' %}{% endif %}">
-                <img src="{% static 'images/logo.png' %}" alt="TAU Logo">
-            </a>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center">
+                    <a href="{% url 'dept_admin:dashboard' %}" class="flex items-center space-x-3">
+                        <div class="logo-container">
+                            A
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-gray-900">Apollo University</div>
+                            <div class="text-sm text-gray-500">Ticket Management System</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="flex items-center">
+                    {% if user.is_authenticated %}
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="{% url 'dept_admin:dashboard' %}" 
+                           class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center space-x-1 {% if request.resolver_match.url_name == 'dashboard' %}active-nav-link{% endif %}">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        {% if user.profile.department.name == 'General' %}
+                        <a href="{% url 'dept_admin:escalated_tickets' %}" 
+                           class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center space-x-1 {% if request.resolver_match.url_name == 'escalated_tickets' %}active-nav-link{% endif %}">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Escalated Tickets</span>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'dept_admin:sla_dashboard' %}" 
+                           class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center space-x-1 {% if request.resolver_match.url_name == 'sla_dashboard' %}active-nav-link{% endif %}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>SLA Dashboard</span>
+                        </a>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="ml-6 relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+                                {{ user.get_full_name|default:user.username|make_list|first|upper }}
+                            </div>
+                            <div class="text-sm text-left">
+                                <div class="font-medium">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-xs text-gray-500">{{ user.profile.department.name }}</div>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        
+                        <div x-show="open" 
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1">
+                            <a href="{% url 'dept_admin:profile' %}" 
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                <i class="fas fa-user-circle w-5"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="{% url 'dept_admin:settings' %}" 
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                <i class="fas fa-cog w-5"></i>
+                                <span>Settings</span>
+                            </a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="{% url 'dept_admin:logout' %}" 
+                               class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center">
+                                <i class="fas fa-sign-out-alt w-5"></i>
+                                <span>Sign out</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        <nav>
-            {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                    <a href="{% url 'dept_admin:dashboard' %}">Dashboard</a>
-                    <form method="post" action="{% url 'dept_admin:logout' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" style="background: none; border: none; color: white; cursor: pointer; font-weight: 600; padding: 0.5rem 1rem;">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'student:landingpage' %}">Dashboard</a>
-                    <a href="{% url 'student:newticket' %}">New Ticket</a>
-                    <a href="{% url 'student:logout' %}">Logout</a>
-                {% endif %}
-            {% else %}
-                <a href="{% url 'student:loginn' %}">Login</a>
-                <a href="{% url 'student:register' %}">Register</a>
-            {% endif %}
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="max-w-7xl mx-auto px-4 py-2">
+        <nav class="text-gray-500 text-sm" aria-label="Breadcrumb">
+            <ol class="list-none p-0 inline-flex items-center space-x-1">
+                <li class="flex items-center">
+                    <a href="{% url 'dept_admin:dashboard' %}" class="hover:text-blue-600">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </li>
+                {% block breadcrumb %}{% endblock %}
+            </ol>
         </nav>
-    </header>
-    {% block content %}{% endblock %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white shadow-inner mt-auto">
+        <div class="max-w-7xl mx-auto py-4 px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="logo-container" style="width: 24px; height: 24px; font-size: 14px;">
+                        A
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        © {% now "Y" %} Apollo University. All rights reserved.
+                    </div>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-gray-600 flex items-center space-x-1">
+                        <i class="fas fa-question-circle"></i>
+                        <span class="text-sm">Help Center</span>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-gray-600 flex items-center space-x-1">
+                        <i class="fas fa-book"></i>
+                        <span class="text-sm">Documentation</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Loading Spinner -->
     <div class="loading-spinner" id="loadingSpinner">
@@ -445,6 +600,18 @@
     <!-- Mobile Navigation -->
     {% if request.user.is_authenticated %}
     <nav class="mobile-nav">
+        {% if user.profile.is_admin %}
+            <a href="{% url 'dept_admin:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <form method="post" action="{% url 'dept_admin:logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        {% else %}
         <a href="{% url 'student:landingpage' %}" {% if request.resolver_match.url_name == 'landingpage' %}class="active"{% endif %}>
             <i class="fas fa-home"></i>
             <span>Home</span>
@@ -459,37 +626,50 @@
             <span>Profile</span>
         </a>
         {% endif %}
-        <a href="{% url 'student:logout' %}" title="Logout">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </a>
+            <form method="post" action="{% url 'student:logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        {% endif %}
     </nav>
     {% endif %}
     
     <script>
         // CSRF Token Management
         function getCSRFToken() {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, 'csrftoken'.length + 1) === ('csrftoken' + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring('csrftoken'.length + 1));
-                        break;
-                    }
-                }
-            }
-            
-            if (!cookieValue) {
-                const metaTag = document.querySelector('meta[name="csrf-token"]');
-                if (metaTag) {
-                    cookieValue = metaTag.getAttribute('content');
-                }
-            }
-            
-            return cookieValue;
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         }
+
+        // Set up CSRF token for all AJAX requests
+        document.addEventListener('DOMContentLoaded', function() {
+            const csrftoken = getCSRFToken();
+            
+            // Add CSRF token to all forms
+            document.querySelectorAll('form').forEach(form => {
+                if (form.method.toLowerCase() === 'post' && !form.querySelector('input[name="csrfmiddlewaretoken"]')) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'csrfmiddlewaretoken';
+                    input.value = csrftoken;
+                    form.appendChild(input);
+                }
+            });
+
+            // Set up AJAX CSRF headers
+            if (csrftoken) {
+                const xhrOpen = XMLHttpRequest.prototype.open;
+                XMLHttpRequest.prototype.open = function() {
+                    const result = xhrOpen.apply(this, arguments);
+                    const method = arguments[0].toUpperCase();
+                    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                        this.setRequestHeader('X-CSRFToken', csrftoken);
+                    }
+                    return result;
+                };
+            }
+        });
 
         // Toast Notification System
         const Toast = {
@@ -552,60 +732,12 @@
             }
         };
 
-        // Set up AJAX CSRF and error handling
-        document.addEventListener('DOMContentLoaded', function() {
-            const csrftoken = getCSRFToken();
-            if (csrftoken) {
-                // Set up AJAX CSRF headers
-                const xhrOpen = XMLHttpRequest.prototype.open;
-                XMLHttpRequest.prototype.open = function() {
-                    const result = xhrOpen.apply(this, arguments);
-                    const method = arguments[0].toUpperCase();
-                    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                        this.setRequestHeader('X-CSRFToken', csrftoken);
-                    }
-                    return result;
-                };
-                
-                // Add CSRF token to forms
-                const forms = document.getElementsByTagName('form');
-                for (let i = 0; i < forms.length; i++) {
-                    const form = forms[i];
-                    if (form.method.toLowerCase() === 'post' && !form.querySelector('input[name="csrfmiddlewaretoken"]')) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'csrfmiddlewaretoken';
-                        input.value = csrftoken;
-                        form.appendChild(input);
-                    }
-                }
-
-                // Add form submission handling
-                forms.forEach(form => {
-                    form.addEventListener('submit', function(e) {
-                        const submitButton = form.querySelector('button[type="submit"]');
-                        if (submitButton) {
-                            submitButton.disabled = true;
-                            const originalText = submitButton.innerHTML;
-                            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                            
-                            // Re-enable after 10 seconds (failsafe)
-                            setTimeout(() => {
-                                submitButton.disabled = false;
-                                submitButton.innerHTML = originalText;
-                            }, 10000);
-                        }
-                    });
-                });
-            }
-
             // Handle Django messages
             const messages = document.querySelectorAll('.django-message');
             messages.forEach(message => {
                 const type = message.dataset.type || 'info';
                 Toast.show(message.textContent, type);
                 message.remove();
-            });
         });
 
         // Add touch event handlers for better mobile interaction

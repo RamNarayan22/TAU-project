@@ -86,6 +86,13 @@
         display: block;
     }
 
+    .help-text {
+        color: #666;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
     .alert {
         padding: 1rem;
         margin-bottom: 1rem;
@@ -150,6 +157,16 @@
         </div>
 
         <div class="form-group">
+            <label for="{{ form.subject.id_for_label }}">Subject</label>
+            {{ form.subject }}
+            {% if form.subject.errors %}
+                {% for error in form.subject.errors %}
+                    <span class="error-message">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
             <label for="{{ form.description.id_for_label }}">Description</label>
             {{ form.description }}
             {% if form.description.errors %}
@@ -167,6 +184,7 @@
                     <span class="error-message">{{ error }}</span>
                 {% endfor %}
             {% endif %}
+            <small class="help-text">Upload any relevant documents or screenshots (max size: 5MB)</small>
         </div>
 
         <button type="submit" class="submit-btn">Submit Complaint</button>

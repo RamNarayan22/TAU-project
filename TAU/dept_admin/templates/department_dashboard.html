@@ -37,12 +37,11 @@
         gap: 1rem;
     }
 
-    .logout-btn {
+    .logout-btn, .escalate-btn {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
         padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, var(--danger), #ef4444);
         color: white;
         border: none;
         border-radius: 0.5rem;
@@ -52,9 +51,17 @@
         cursor: pointer;
     }
 
-    .logout-btn:hover {
+    .logout-btn {
+        background: linear-gradient(135deg, var(--danger), #ef4444);
+    }
+
+    .escalate-btn {
+        background: linear-gradient(135deg, var(--primary), #3b82f6);
+    }
+
+    .logout-btn:hover, .escalate-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     }
 
     @media (max-width: 768px) {
@@ -72,7 +79,7 @@
             justify-content: flex-end;
         }
 
-        .logout-btn {
+        .logout-btn, .escalate-btn {
             width: 100%;
             justify-content: center;
         }
@@ -170,6 +177,10 @@
     <div class="dashboard-header">
         <h1>Department Dashboard</h1>
         <div class="header-right">
+            <a href="{% url 'dept_admin:sla_dashboard' %}" class="escalate-btn">
+                <i class="fas fa-arrow-up"></i>
+                SLA & Escalation
+            </a>
             <form method="POST" action="{% url 'dept_admin:logout' %}" id="logoutForm" style="margin: 0;">
                 {% csrf_token %}
                 <button type="submit" class="logout-btn">
@@ -199,6 +210,10 @@
             <div class="info-item">
                 <h3><i class="fas fa-clock"></i> Last Login</h3>
                 <p>{{ request.user.last_login|date:"F j, Y, g:i a" }}</p>
+            </div>
+            <div class="info-item">
+                <h3><i class="fas fa-chart-line"></i> SLA Status</h3>
+                <p><a href="{% url 'dept_admin:sla_dashboard' %}" style="color: var(--primary); text-decoration: none;">View SLA Dashboard</a></p>
             </div>
         </div>
     </div>
