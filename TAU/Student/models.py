@@ -100,17 +100,10 @@ class Ticket(models.Model):
             random_id = str(uuid.uuid4()).upper()[:4]
             self.ticket_id = f'AU-{year}-{dept_code}-{random_id}'
         
-        # Store original department when escalating
-        if self.status == 'escalated' and not self.escalated_at:
-            self.escalated_at = timezone.now()
-            if not self.original_department:
-                self.original_department = self.department
-        
         if self.status == 'resolved' and not self.resolved_at:
             self.resolved_at = timezone.now()
         elif self.status != 'resolved':
             self.resolved_at = None
-            self.resolved_by = None
         
         super().save(*args, **kwargs)
 
@@ -155,6 +148,9 @@ class Ticket(models.Model):
 
     def escalate(self, escalated_by, reason=None):
         """Escalate the ticket to general category"""
+        if self.status in ['resolved', 'closed']:
+            raise Exception(f"Cannot escalate a ticket that is already {self.status}.")
+
         if self.status != 'escalated':
             # Store the original department before changing it
             self.original_department = self.department
@@ -171,6 +167,7 @@ class Ticket(models.Model):
             self.escalated_at = timezone.now()
             self.escalated_by = escalated_by
             self.escalation_reason = reason
+            
             # Save all fields without update_fields restriction to ensure proper update
             self.save()
 
@@ -193,6 +190,8 @@ class Ticket(models.Model):
                 action_flag=CHANGE,
                 change_message=f"Ticket escalated to General department. Reason: {reason or 'SLA breach'}"
             )
+        else:
+            print(f"Ticket {self.ticket_id} is already escalated")
 
     def clean(self):
         super().clean()

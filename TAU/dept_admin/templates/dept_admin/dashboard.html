@@ -1,300 +1,266 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 {% load static %}
 {% load custom_filters %}
 
 {% block title %}{{ department_name }} Department - Admin Dashboard{% endblock %}
 
-{% block content %}
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+{% block breadcrumb %}
+<li class="flex items-center">
+    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+    <span class="text-gray-600">Dashboard</span>
+</li>
+{% endblock %}
 
-    .dashboard-container {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-        font-family: 'Inter', sans-serif;
-    }
-
-    .welcome-section {
-        background: linear-gradient(135deg, #1e40af, #3b82f6);
-        color: white;
-        border-radius: 1rem;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .department-name {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: #ffffff;
-    }
-
-    .admin-info {
-        font-size: 1.25rem;
-        opacity: 0.9;
-        margin-bottom: 1rem;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        border: none;
-    }
-
-    .btn-primary {
-        background-color: #ffffff;
-        color: #1e40af;
-    }
-
-    .btn-primary:hover {
-        background-color: #f3f4f6;
-        transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
-        backdrop-filter: blur(4px);
-    }
-
-    .btn-secondary:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-title {
-        font-size: 1rem;
-        color: #6b7280;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1e40af;
-    }
-
-    .stat-subtitle {
-        font-size: 0.875rem;
-        color: #9ca3af;
-        margin-top: 0.25rem;
-    }
-
-    .tickets-section {
-        background: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    @media (max-width: 768px) {
-        .action-buttons {
-            flex-direction: column;
-        }
-
-        .department-name {
-            font-size: 2rem;
-        }
-
-        .admin-info {
-            font-size: 1.1rem;
-        }
-
-        .btn {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-</style>
-
-<div class="container mx-auto px-4 py-8">
-    <!-- Department Header -->
-    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg p-6 mb-8">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-                <h1 class="text-4xl font-bold mb-2">{{ department_name }}</h1>
-                <p class="text-xl opacity-90 mb-4">Department Administration Portal</p>
-                <div class="bg-blue-900 bg-opacity-50 rounded-lg px-4 py-2 inline-block">
-                    <p class="text-sm opacity-90">Department Code: {{ request.user.profile.department.code|default:"N/A" }}</p>
+{% block admin_content %}
+<div class="space-y-8">
+    <!-- Professional Header Section -->
+    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-xl shadow-xl overflow-hidden">
+        <div class="px-8 py-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div class="mb-6 lg:mb-0">
+                    <h1 class="text-3xl lg:text-4xl font-bold text-white mb-2">
+                        {{ department_name }} Department
+                    </h1>
+                    <p class="text-blue-100 text-lg mb-4">
+                        Administrative Dashboard & Analytics Center
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <span class="text-blue-100 text-sm font-medium">Department Code:</span>
+                            <span class="text-white font-semibold ml-2">{{ request.user.profile.department.code|default:"N/A" }}</span>
+                        </div>
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <span class="text-blue-100 text-sm font-medium">Last Updated:</span>
+                            <span class="text-white font-semibold ml-2">{{ request.user.last_login|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
                 </div>
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-user-tie text-2xl text-white"></i>
             </div>
-            <div class="mt-4 md:mt-0 bg-white bg-opacity-10 rounded-lg p-4">
-                <p class="text-lg font-semibold">{{ request.user.get_full_name|default:request.user.username }}</p>
-                <p class="text-sm opacity-90">Department Administrator</p>
-                <p class="text-sm opacity-90">Last Login: {{ request.user.last_login|date:"d M Y, h:i A" }}</p>
+                        <h3 class="text-white font-semibold text-lg">{{ request.user.get_full_name|default:request.user.username }}</h3>
+                        <p class="text-blue-100 text-sm">Department Administrator</p>
             </div>
         </div>
     </div>
-
-    <!-- Quick Actions -->
-    <div class="bg-white rounded-lg shadow-lg p-4 mb-8">
-        <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a href="{% url 'dept_admin:sla_dashboard' %}" class="bg-blue-50 hover:bg-blue-100 p-4 rounded-lg text-center">
-                <span class="block text-blue-600 font-semibold">SLA Dashboard</span>
-            </a>
-            <a href="{% url 'dept_admin:create_student' %}" class="bg-green-50 hover:bg-green-100 p-4 rounded-lg text-center">
-                <span class="block text-green-600 font-semibold">Create Student</span>
-            </a>
-            <a href="{% url 'dept_admin:export_complaints' %}" class="bg-purple-50 hover:bg-purple-100 p-4 rounded-lg text-center">
-                <span class="block text-purple-600 font-semibold">Export Data</span>
-            </a>
-            <a href="{% url 'dept_admin:sla_breach_report' %}" class="bg-red-50 hover:bg-red-100 p-4 rounded-lg text-center">
-                <span class="block text-red-600 font-semibold">SLA Breaches</span>
-            </a>
         </div>
     </div>
 
-    <!-- Statistics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Active Tickets -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
+    <!-- Key Performance Indicators -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Active Tickets Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-gray-600 text-sm font-medium">Active Tickets</h2>
-                    <p class="text-2xl font-semibold text-gray-800">{{ active_tickets_count }}</p>
+                <div class="text-right">
+                    <span class="text-sm text-gray-500">Active</span>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 mb-1">{{ active_tickets_count }}</h3>
+            <p class="text-gray-600 text-sm">Open Tickets</p>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center text-sm">
+                    <span class="text-green-600 font-medium">+12%</span>
+                    <span class="text-gray-500 ml-2">from last week</span>
                 </div>
             </div>
         </div>
 
-        <!-- Resolution Rate -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+        <!-- Resolution Rate Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-gray-600 text-sm font-medium">Resolution Rate</h2>
-                    <p class="text-2xl font-semibold {% if resolution_rate >= 90 %}text-green-600{% else %}text-yellow-600{% endif %}">
+                <div class="text-right">
+                    <span class="text-sm text-gray-500">Success</span>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold {% if resolution_rate >= 90 %}text-green-600{% else %}text-yellow-600{% endif %} mb-1">
                 {{ resolution_rate|floatformat:1 }}%
-            </p>
+            </h3>
+            <p class="text-gray-600 text-sm">Resolution Rate</p>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center text-sm">
+                    <span class="{% if resolution_rate >= 90 %}text-green-600{% else %}text-yellow-600{% endif %} font-medium">
+                        {% if resolution_rate >= 90 %}✓{% else %}⚠{% endif %}
+                    </span>
+                    <span class="text-gray-500 ml-2">
+                        {% if resolution_rate >= 90 %}Target achieved{% else %}Below target{% endif %}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- SLA Compliance -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+        <!-- SLA Compliance Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-purple-600 text-xl"></i>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-gray-600 text-sm font-medium">SLA Compliance</h2>
-                    <p class="text-2xl font-semibold {% if sla_compliance >= 95 %}text-green-600{% else %}text-red-600{% endif %}">
+                <div class="text-right">
+                    <span class="text-sm text-gray-500">Compliance</span>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold {% if sla_compliance >= 95 %}text-green-600{% else %}text-red-600{% endif %} mb-1">
                 {{ sla_compliance|floatformat:1 }}%
-            </p>
+            </h3>
+            <p class="text-gray-600 text-sm">SLA Compliance</p>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center text-sm">
+                    <span class="{% if sla_compliance >= 95 %}text-green-600{% else %}text-red-600{% endif %} font-medium">
+                        {% if sla_compliance >= 95 %}✓{% else %}✗{% endif %}
+                    </span>
+                    <span class="text-gray-500 ml-2">
+                        {% if sla_compliance >= 95 %}Within SLA{% else %}SLA breaches{% endif %}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Average Response Time -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+        <!-- Average Response Time Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-stopwatch text-orange-600 text-xl"></i>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-gray-600 text-sm font-medium">Avg Response Time</h2>
-                    <p class="text-2xl font-semibold {% if avg_response_hours <= 24 %}text-green-600{% else %}text-red-600{% endif %}">
-                {{ avg_response_hours|floatformat:1 }} hrs
-            </p>
+                <div class="text-right">
+                    <span class="text-sm text-gray-500">Average</span>
                 </div>
             </div>
+            <h3 class="text-3xl font-bold {% if avg_response_hours <= 24 %}text-green-600{% else %}text-red-600{% endif %} mb-1">
+                {{ avg_response_hours|floatformat:1 }}h
+            </h3>
+            <p class="text-gray-600 text-sm">Response Time</p>
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center text-sm">
+                    <span class="{% if avg_response_hours <= 24 %}text-green-600{% else %}text-red-600{% endif %} font-medium">
+                        {% if avg_response_hours <= 24 %}Fast{% else %}Slow{% endif %}
+                    </span>
+                    <span class="text-gray-500 ml-2">response time</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Quick Actions</h2>
+            <p class="text-gray-500 text-sm">Common administrative tasks</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="{% url 'dept_admin:sla_dashboard' %}" 
+               class="group bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-chart-bar text-white text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-blue-900 mb-1">SLA Dashboard</h3>
+                <p class="text-blue-700 text-sm">Performance metrics</p>
+            </a>
+            
+            <a href="{% url 'dept_admin:create_student' %}" 
+               class="group bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-user-plus text-white text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-green-900 mb-1">Create Student</h3>
+                <p class="text-green-700 text-sm">Add new accounts</p>
+            </a>
+            
+            <a href="{% url 'dept_admin:export_complaints' %}" 
+               class="group bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-download text-white text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-purple-900 mb-1">Export Data</h3>
+                <p class="text-purple-700 text-sm">Download reports</p>
+            </a>
+            
+            <a href="{% url 'dept_admin:sla_breach_report' %}" 
+               class="group bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 rounded-xl p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-red-900 mb-1">SLA Breaches</h3>
+                <p class="text-red-700 text-sm">Monitor violations</p>
+            </a>
         </div>
     </div>
 
     <!-- Priority Queue Section -->
-    <div class="bg-white rounded-lg shadow mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-800">Priority Queue</h2>
-            <p class="text-sm text-gray-600">Tickets at risk of SLA breach</p>
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Priority Queue</h2>
+                    <p class="text-gray-600 text-sm">Tickets requiring immediate attention</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        {{ priority_queue|length }} Critical
+                    </span>
+                </div>
+            </div>
         </div>
+        
         <div class="p-6">
             {% if priority_queue %}
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                     <thead>
-                    <tr>
-                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket ID</th>
-                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
-                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Remaining</th>
-                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Remaining</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                         {% for item in priority_queue %}
-                    <tr>
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
                         <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-blue-600">{{ item.ticket.ticket_id }}</div>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
+                                    <span class="text-sm font-medium text-blue-600">{{ item.ticket.ticket_id }}</span>
+                                </div>
                         </td>
                         <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ item.ticket.subject }}</div>
+                                <div class="text-sm text-gray-900 max-w-xs truncate">{{ item.ticket.subject }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm">
                                     {% if item.risk_percentage >= 90 %}
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Critical</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <span class="w-2 h-2 bg-red-400 rounded-full mr-1.5"></span>
+                                    Critical
+                                </span>
                                     {% elif item.risk_percentage >= 75 %}
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">High</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    <span class="w-2 h-2 bg-orange-400 rounded-full mr-1.5"></span>
+                                    High
+                                </span>
                                 {% else %}
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Medium</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <span class="w-2 h-2 bg-yellow-400 rounded-full mr-1.5"></span>
+                                    Medium
+                                </span>
                                 {% endif %}
-                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-500">{{ item.hours_remaining|floatformat:1 }} hours</div>
+                                <div class="text-sm text-gray-900 font-medium">{{ item.hours_remaining|floatformat:1 }} hours</div>
+                                <div class="text-xs text-gray-500">remaining</div>
                         </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <a href="{% url 'dept_admin:view_ticket' item.ticket.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                                <a href="{% url 'dept_admin:view_ticket' item.ticket.id %}" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-200">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    View
+                                </a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -302,12 +268,136 @@
             </table>
         </div>
             {% else %}
-            <p class="text-gray-600 text-center py-4">No tickets at risk of SLA breach</p>
+            <div class="text-center py-12">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">All Clear!</h3>
+                <p class="text-gray-500">No tickets are currently at risk of SLA breach.</p>
+            </div>
             {% endif %}
         </div>
     </div>
-            </div>
 
+    <!-- Recent Tickets Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Recent Tickets</h2>
+                    <p class="text-gray-600 text-sm">All tickets for {{ department_name }} department</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ tickets|length }} Total
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            {% if tickets %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for ticket in tickets|slice:":10" %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 {% if ticket.status == 'open' %}bg-red-500{% elif ticket.status == 'in_progress' %}bg-yellow-500{% elif ticket.status == 'resolved' %}bg-green-500{% else %}bg-gray-500{% endif %} rounded-full mr-3"></div>
+                                    <span class="text-sm font-medium text-blue-600">{{ ticket.ticket_id }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ ticket.student.get_full_name|default:ticket.student.username }}</div>
+                                <div class="text-xs text-gray-500">{{ ticket.student.email }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900 max-w-xs truncate">{{ ticket.subject }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if ticket.status == 'open' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Open
+                                </span>
+                                {% elif ticket.status == 'in_progress' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    In Progress
+                                </span>
+                                {% elif ticket.status == 'resolved' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Resolved
+                                </span>
+                                {% elif ticket.status == 'escalated' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    Escalated
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if ticket.priority == 'high' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    High
+                                </span>
+                                {% elif ticket.priority == 'medium' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Medium
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Low
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ ticket.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <a href="{% url 'dept_admin:view_ticket' ticket.id %}" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-200">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if tickets.count > 10 %}
+            <div class="mt-4 text-center">
+                <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    View all {{ tickets.count }} tickets →
+                </a>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-12">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-inbox text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Tickets Yet</h3>
+                <p class="text-gray-500">No tickets have been submitted to this department.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 <!-- Create Student Modal -->
 <div id="createStudentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -328,7 +418,23 @@
 
         <form method="post" class="space-y-4" id="createStudentForm">
             {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ student_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                {{ student_form.email }}
+                {% if student_form.email.help_text %}
+                    <div class="mt-2 text-sm text-gray-500">
+                        {{ student_form.email.help_text }}
+                    </div>
+                {% endif %}
+                {% if student_form.email.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ student_form.email.errors|join:', ' }}
+                    </div>
+                {% endif %}
+            </div>
+
             {% for field in student_form %}
+                {% if field.name != 'email' %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         {{ field.label }}
@@ -345,6 +451,7 @@
                         </div>
                     {% endif %}
                 </div>
+                {% endif %}
             {% endfor %}
             <div class="mt-4">
                 <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
@@ -405,11 +512,4 @@
         {% endif %}
     });
 </script>
-
-<form method="POST" action="{% url 'dept_admin:logout' %}" style="margin: 0;">
-    {% csrf_token %}
-    <button type="submit" class="text-red-600 hover:text-red-800">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
-</form>
 {% endblock %} 

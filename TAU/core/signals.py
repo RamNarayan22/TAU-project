@@ -8,7 +8,8 @@ def create_profile(sender, instance, created, **kwargs):
     if created and not hasattr(instance, 'profile'):
         Profile.objects.create(
             user=instance,
-            is_admin=instance.is_staff
+            is_admin=instance.is_staff,
+            must_change_password=not instance.is_staff
         )
 
 @receiver(post_save, sender=User)

@@ -15,6 +15,7 @@ urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.dept_admin_logout, name='logout'),
+    path('change-password/', views.change_password, name='change_password'),
     path('ticket/<int:ticket_id>/', views.view_ticket, name='view_ticket'),
     path('manage-sla/', views.manage_sla, name='manage_sla'),
     path('update-complaint/<int:complaint_id>/', views.update_complaint, name='update_complaint'),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('bulk-create-students/', views.bulk_create_students, name='bulk_create_students'),
     path('download-template/', views.download_template, name='download_template'),
     path('escalated-tickets/', views.general_escalated_tickets, name='escalated_tickets'),
+    path('handle-escalated-ticket/<int:ticket_id>/', views.handle_escalated_ticket, name='handle_escalated_ticket'),
     path('profile/', views.profile_view, name='profile'),
     path('settings/', views.settings_view, name='settings'),
 

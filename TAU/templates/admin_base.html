@@ -1,0 +1,566 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-collapsed-width: 80px;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+        color: white;
+        z-index: 50;
+        transition: all 0.3s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+    }
+
+    .sidebar-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .sidebar-brand.collapsed {
+        justify-content: center;
+    }
+
+    .sidebar-logo {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+        color: white;
+    }
+
+    .sidebar-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .sidebar-subtitle {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: -2px;
+    }
+
+    .sidebar-toggle {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .sidebar-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-nav {
+        padding: 1rem 0;
+    }
+
+    .nav-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .nav-section-title {
+        padding: 0 1.5rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border-right: 3px solid #fbbf24;
+    }
+
+    .nav-item-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .nav-item-text {
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .user-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-role {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .user-action-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-action-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .user-action-btn.logout {
+        background: rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+    }
+
+    .user-action-btn.logout:hover {
+        background: rgba(239, 68, 68, 0.3);
+        color: #fecaca;
+    }
+
+    /* Main Content Area */
+    .main-content {
+        margin-left: var(--sidebar-width);
+        min-height: 100vh;
+        transition: margin-left 0.3s ease;
+    }
+
+    .main-content.sidebar-collapsed {
+        margin-left: var(--sidebar-collapsed-width);
+    }
+
+    .content-header {
+        background: white;
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem 2rem;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-item:not(:last-child)::after {
+        content: '/';
+        color: var(--gray-400);
+        margin-left: 0.5rem;
+    }
+
+    .breadcrumb-link {
+        color: var(--gray-600);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--primary);
+    }
+
+    .content-body {
+        padding: 2rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .sidebar {
+            transform: translateX(-100%);
+        }
+
+        .sidebar.mobile-open {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-btn {
+            display: block;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 60;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    @media (min-width: 1025px) {
+        .mobile-menu-btn {
+            display: none;
+        }
+    }
+
+    /* Collapsed Sidebar Styles */
+    .sidebar.collapsed .sidebar-title,
+    .sidebar.collapsed .sidebar-subtitle,
+    .sidebar.collapsed .nav-item-text,
+    .sidebar.collapsed .nav-section-title,
+    .sidebar.collapsed .user-details,
+    .sidebar.collapsed .user-actions {
+        display: none;
+    }
+
+    .sidebar.collapsed .nav-item {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+
+    .sidebar.collapsed .nav-item-icon {
+        margin-right: 0;
+    }
+
+    .sidebar.collapsed .user-info {
+        justify-content: center;
+    }
+
+    .sidebar.collapsed .sidebar-footer {
+        padding: 1rem 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mobile Menu Button -->
+<button class="mobile-menu-btn" id="mobileMenuBtn">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <div class="sidebar-brand" id="sidebarBrand">
+            <div class="sidebar-logo">A</div>
+            <div>
+                <div class="sidebar-title">Apollo University</div>
+                <div class="sidebar-subtitle">Ticket Management</div>
+            </div>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        {% if user.is_authenticated %}
+            <!-- Main Navigation -->
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a href="{% url 'dept_admin:dashboard' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="nav-item-text">Dashboard</span>
+                </a>
+                
+                {% if user.profile.department.name == 'General' %}
+                <a href="{% url 'dept_admin:escalated_tickets' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'escalated_tickets' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <span class="nav-item-text">Escalated Tickets</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Analytics -->
+            <div class="nav-section">
+                <div class="nav-section-title">Analytics</div>
+                <a href="{% url 'dept_admin:sla_dashboard' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'sla_dashboard' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="nav-item-text">SLA Dashboard</span>
+                </a>
+                <a href="{% url 'dept_admin:sla_breach_report' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'sla_breach_report' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <span class="nav-item-text">SLA Breaches</span>
+                </a>
+            </div>
+
+            <!-- Management -->
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <a href="{% url 'dept_admin:create_student' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'create_student' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <span class="nav-item-text">Create Student</span>
+                </a>
+                <a href="{% url 'dept_admin:manage_sla_config' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'manage_sla_config' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <span class="nav-item-text">SLA Configuration</span>
+                </a>
+                <a href="{% url 'dept_admin:export_complaints' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'export_complaints' %}active{% endif %}">
+                    <div class="nav-item-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <span class="nav-item-text">Export Data</span>
+                </a>
+            </div>
+        {% endif %}
+    </nav>
+
+    <!-- Sidebar Footer -->
+    {% if user.is_authenticated %}
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">
+                {{ user.get_full_name|default:user.username|make_list|first|upper }}
+            </div>
+            <div class="user-details">
+                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="user-role">{{ user.profile.department.name }} Admin</div>
+            </div>
+        </div>
+        <div class="user-actions">
+            <a href="{% url 'dept_admin:profile' %}" class="user-action-btn" title="Profile">
+                <i class="fas fa-user-circle"></i>
+            </a>
+            <a href="{% url 'dept_admin:settings' %}" class="user-action-btn" title="Settings">
+                <i class="fas fa-cog"></i>
+            </a>
+            <a href="{% url 'dept_admin:logout' %}" class="user-action-btn logout" title="Sign out">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</aside>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <!-- Content Header -->
+    <header class="content-header">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <div class="breadcrumb-item">
+                <a href="{% url 'dept_admin:dashboard' %}" class="breadcrumb-link">
+                    <i class="fas fa-home"></i>
+                </a>
+            </div>
+            {% block breadcrumb %}{% endblock %}
+        </nav>
+    </header>
+
+    <!-- Content Body -->
+    <main class="content-body">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-200{% elif message.tags == 'error' %}bg-red-100 text-red-700 border border-red-200{% else %}bg-blue-100 text-blue-700 border border-blue-200{% endif %}">
+                    <div class="flex items-center">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block admin_content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Sidebar Toggle Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarBrand = document.getElementById('sidebarBrand');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('sidebar-collapsed');
+            sidebarBrand.classList.toggle('collapsed');
+            
+            // Update toggle button icon
+            const icon = sidebarToggle.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                icon.className = 'fas fa-chevron-left';
+            }
+        }
+
+        // Mobile menu functionality
+        function openMobileMenu() {
+            sidebar.classList.add('mobile-open');
+            mobileOverlay.classList.add('show');
+        }
+
+        function closeMobileMenu() {
+            sidebar.classList.remove('mobile-open');
+            mobileOverlay.classList.remove('show');
+        }
+
+        // Event listeners
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        mobileOverlay.addEventListener('click', closeMobileMenu);
+
+        // Close mobile menu on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 1024) {
+                closeMobileMenu();
+            }
+        });
+    });
+</script>
+{% endblock %} 

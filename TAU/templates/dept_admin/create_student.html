@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Create Student Account{% endblock %}
+{% block title %}Create Student Accounts{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Create Student Account</h2>
+            <h2 class="text-2xl font-bold">Create Student Accounts</h2>
             <a href="{% url 'dept_admin:dashboard' %}" class="text-blue-600 hover:text-blue-800">
                 <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
             </a>
@@ -21,41 +21,192 @@
             {% endfor %}
         {% endif %}
 
-        <form method="post" class="space-y-6">
+        <!-- Tab Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8">
+                <button onclick="showTab('single')" id="single-tab" class="tab-button active py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
+                    <i class="fas fa-user-plus mr-2"></i>Single Student
+                </button>
+                <button onclick="showTab('bulk')" id="bulk-tab" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-users mr-2"></i>Bulk Upload
+                </button>
+            </nav>
+        </div>
+
+        <!-- Single Student Creation Tab -->
+        <div id="single-tab-content" class="tab-content">
+            <form method="post" class="space-y-6" id="createStudentForm">
             {% csrf_token %}
-            
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Input Method</label>
+                    {{ form.mode }}
+                </div>
+                <div id="emailField" class="form-group">
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    {{ form.email }}
+                    {% if form.email.help_text %}
+                        <div class="mt-2 text-sm text-gray-500">
+                            {{ form.email.help_text }}
+                        </div>
+                    {% endif %}
+                    {% if form.email.errors %}
+                        <div class="mt-2 text-sm text-red-600">
+                            {{ form.email.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div id="rollField" class="form-group" style="display:none;">
+                    <label for="{{ form.roll_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">12-digit Roll Number</label>
+                    {{ form.roll_number }}
+                    {% if form.roll_number.help_text %}
+                        <div class="mt-2 text-sm text-gray-500">
+                            {{ form.roll_number.help_text }}
+                        </div>
+                    {% endif %}
+                    {% if form.roll_number.errors %}
+                        <div class="mt-2 text-sm text-red-600">
+                            {{ form.roll_number.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
             <div class="form-group">
-                <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                <input type="text" id="first_name" name="first_name" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="mt-2 text-sm text-red-600">
+                            {{ form.first_name.errors|join:", " }}
+                        </div>
+                    {% endif %}
             </div>
-
             <div class="form-group">
-                <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                <input type="text" id="last_name" name="last_name" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="mt-2 text-sm text-red-600">
+                            {{ form.last_name.errors|join:", " }}
+                        </div>
+                    {% endif %}
             </div>
-
-            <div class="form-group">
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <input type="email" id="email" name="email" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-
             <div class="bg-gray-50 p-4 rounded-lg mb-6">
                 <h3 class="text-sm font-medium text-gray-700 mb-2">Note:</h3>
                 <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
-                    <li>Roll number will be automatically generated</li>
+                        <li>Enter the student's 12-digit roll number in the email field with @apollouniversity.edu.in or just the roll number using the toggle above.</li>
+                        <li>Example: 240202400001@apollouniversity.edu.in or 240202400001</li>
                     <li>Default password will be set to "Random@123"</li>
                     <li>Student will be required to change password on first login</li>
-                    <li>Student will be associated with your department</li>
+                        <li>Student will not be assigned to any specific department</li>
+                    </ul>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+                    <i class="fas fa-user-plus mr-2"></i>Create Student Account
+                </button>
+            </form>
+        </div>
+
+        <!-- Bulk Upload Tab -->
+        <div id="bulk-tab-content" class="tab-content" style="display:none;">
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold mb-2">Instructions:</h3>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Download the template Excel file below</li>
+                    <li>Fill in the student details: <b>First Name, Last Name, Email</b></li>
+                    <li>Enter the full email address: <b>rollnumber@apollouniversity.edu.in</b> (e.g., 240202400001@apollouniversity.edu.in)</li>
+                    <li>Upload the filled Excel file</li>
+                    <li>Default password for all students will be "Random@123"</li>
+                    <li>Students will be required to change password on first login</li>
+                    <li>Students will not be assigned to any specific department</li>
                 </ul>
             </div>
 
+            <div class="mb-8">
+                <a href="{% url 'dept_admin:download_template' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-download mr-2"></i>Download Template
+                </a>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="excel_file" class="block text-sm font-medium text-gray-700 mb-2">Upload Excel File</label>
+                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" 
+                           class="block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-blue-50 file:text-blue-700
+                                  hover:file:bg-blue-100" required>
+                    <p class="mt-2 text-sm text-gray-500">Only Excel files (.xlsx, .xls) are allowed</p>
+            </div>
+
             <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-                <i class="fas fa-user-plus mr-2"></i>Create Student Account
+                    <i class="fas fa-upload mr-2"></i>Upload and Create Students
             </button>
         </form>
+
+            {% if preview_data %}
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold mb-4">Preview of Students Created:</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll Number</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for student in preview_data %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ student.roll_number }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.first_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.last_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.email }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<script>
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+            button.classList.add('border-transparent', 'text-gray-500');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName + '-tab-content').style.display = 'block';
+        
+        // Add active class to selected tab button
+        document.getElementById(tabName + '-tab').classList.add('active', 'border-blue-500', 'text-blue-600');
+        document.getElementById(tabName + '-tab').classList.remove('border-transparent', 'text-gray-500');
+    }
+
+    function toggleFields() {
+        var mode = document.querySelector('input[name="mode"]:checked').value;
+        document.getElementById('emailField').style.display = (mode === 'email') ? '' : 'none';
+        document.getElementById('rollField').style.display = (mode === 'roll') ? '' : 'none';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var radios = document.querySelectorAll('input[name="mode"]');
+        radios.forEach(function(radio) {
+            radio.addEventListener('change', toggleFields);
+        });
+        toggleFields(); // Set initial state
+    });
+</script>
 {% endblock %} 

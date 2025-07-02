@@ -33,33 +33,47 @@
         <div class="mb-8">
             <h3 class="text-lg font-semibold mb-2">Instructions:</h3>
             <ul class="list-disc list-inside text-gray-700 space-y-2">
-                <li>Download the template Excel file below</li>
-                <li>Fill in the student details (First Name, Last Name, Email)</li>
-                <li>Upload the filled Excel file</li>
-                <li>Roll numbers will be automatically generated</li>
+                <li>Create a CSV or Excel file with these columns: <b>Roll Number, First Name, Last Name</b></li>
+                <li>Roll Number must be exactly 12 digits (e.g., 240202400001)</li>
+                <li>First Name and Last Name are required</li>
+                <li>Email will be automatically created as: rollnumber@apollouniversity.edu.in</li>
                 <li>Default password for all students will be "Random@123"</li>
                 <li>Students will be required to change password on first login</li>
             </ul>
         </div>
 
         <div class="mb-8">
-            <a href="{% url 'dept_admin:download_template' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                <i class="fas fa-download mr-2"></i>Download Template
-            </a>
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            Example CSV content:<br>
+                            <code class="bg-yellow-100 px-2 py-1 rounded">
+                                Roll Number,First Name,Last Name<br>
+                                240202400001,John,Doe<br>
+                                240202400002,Jane,Smith
+                            </code>
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
             <div class="form-group">
-                <label for="excel_file" class="block text-sm font-medium text-gray-700 mb-2">Upload Excel File</label>
-                <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" 
+                <label for="file" class="block text-sm font-medium text-gray-700 mb-2">Upload File (CSV or Excel)</label>
+                <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" 
                        class="block w-full text-sm text-gray-500
                               file:mr-4 file:py-2 file:px-4
                               file:rounded-full file:border-0
                               file:text-sm file:font-semibold
                               file:bg-blue-50 file:text-blue-700
                               hover:file:bg-blue-100" required>
-                <p class="mt-2 text-sm text-gray-500">Only Excel files (.xlsx, .xls) are allowed</p>
+                <p class="mt-2 text-sm text-gray-500">Upload a CSV or Excel file (.csv, .xlsx, .xls)</p>
             </div>
 
             <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
@@ -69,7 +83,7 @@
 
         {% if preview_data %}
         <div class="mt-8">
-            <h3 class="text-lg font-semibold mb-4">Preview of Students to be Created:</h3>
+            <h3 class="text-lg font-semibold mb-4">Created Students:</h3>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">

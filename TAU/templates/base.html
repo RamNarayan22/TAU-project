@@ -442,151 +442,23 @@
         .active-nav-link::after {
             transform: scaleX(1);
         }
-
-        .dropdown-menu {
-            transform-origin: top right;
-            transition: all 0.2s ease;
-        }
-
-        .dropdown-menu[x-cloak] {
-            display: none;
-        }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
-    <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <!-- Logo and Brand -->
-                <div class="flex items-center">
-                    <a href="{% url 'dept_admin:dashboard' %}" class="flex items-center space-x-3">
-                        <div class="logo-container">
-                            A
-                        </div>
-                        <div>
-                            <div class="text-xl font-bold text-gray-900">Apollo University</div>
-                            <div class="text-sm text-gray-500">Ticket Management System</div>
-                        </div>
-                    </a>
-                </div>
+    {% block content %}
 
-                <!-- Navigation Links -->
-                <div class="flex items-center">
-                    {% if user.is_authenticated %}
-                    <div class="hidden md:flex items-center space-x-6">
-                        <a href="{% url 'dept_admin:dashboard' %}" 
-                           class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center space-x-1 {% if request.resolver_match.url_name == 'dashboard' %}active-nav-link{% endif %}">
-                            <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
-                        </a>
-                        {% if user.profile.department.name == 'General' %}
-                        <a href="{% url 'dept_admin:escalated_tickets' %}" 
-                           class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center space-x-1 {% if request.resolver_match.url_name == 'escalated_tickets' %}active-nav-link{% endif %}">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>Escalated Tickets</span>
-                        </a>
-                        {% endif %}
-                        <a href="{% url 'dept_admin:sla_dashboard' %}" 
-                           class="nav-link text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center space-x-1 {% if request.resolver_match.url_name == 'sla_dashboard' %}active-nav-link{% endif %}">
-                            <i class="fas fa-chart-line"></i>
-                            <span>SLA Dashboard</span>
-                        </a>
-                    </div>
-
-                    <!-- User Menu -->
-                    <div class="ml-6 relative" x-data="{ open: false }">
-                        <button @click="open = !open" 
-                                class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 focus:outline-none">
-                            <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
-                                {{ user.get_full_name|default:user.username|make_list|first|upper }}
-                            </div>
-                            <div class="text-sm text-left">
-                                <div class="font-medium">{{ user.get_full_name|default:user.username }}</div>
-                                <div class="text-xs text-gray-500">{{ user.profile.department.name }}</div>
-                            </div>
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                        
-                        <div x-show="open" 
-                             @click.away="open = false"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1">
-                            <a href="{% url 'dept_admin:profile' %}" 
-                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                                <i class="fas fa-user-circle w-5"></i>
-                                <span>Profile</span>
-                            </a>
-                            <a href="{% url 'dept_admin:settings' %}" 
-                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                                <i class="fas fa-cog w-5"></i>
-                                <span>Settings</span>
-                            </a>
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <a href="{% url 'dept_admin:logout' %}" 
-                               class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center">
-                                <i class="fas fa-sign-out-alt w-5"></i>
-                                <span>Sign out</span>
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Breadcrumb -->
-    <div class="max-w-7xl mx-auto px-4 py-2">
-        <nav class="text-gray-500 text-sm" aria-label="Breadcrumb">
-            <ol class="list-none p-0 inline-flex items-center space-x-1">
-                <li class="flex items-center">
-                    <a href="{% url 'dept_admin:dashboard' %}" class="hover:text-blue-600">
-                        <i class="fas fa-home"></i>
-                    </a>
-                </li>
-                {% block breadcrumb %}{% endblock %}
-            </ol>
-        </nav>
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
     </div>
+        {% endfor %}
+    {% endif %}
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white shadow-inner mt-auto">
-        <div class="max-w-7xl mx-auto py-4 px-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <div class="logo-container" style="width: 24px; height: 24px; font-size: 14px;">
-                        A
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        © {% now "Y" %} Apollo University. All rights reserved.
-                    </div>
-                </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-gray-600 flex items-center space-x-1">
-                        <i class="fas fa-question-circle"></i>
-                        <span class="text-sm">Help Center</span>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-gray-600 flex items-center space-x-1">
-                        <i class="fas fa-book"></i>
-                        <span class="text-sm">Documentation</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    
+    {% endblock %}
 
     <!-- Loading Spinner -->
     <div class="loading-spinner" id="loadingSpinner">
@@ -639,12 +511,42 @@
     <script>
         // CSRF Token Management
         function getCSRFToken() {
-            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            if (!token) {
+                console.error('CSRF token not found');
+            }
+            return token;
         }
 
         // Set up CSRF token for all AJAX requests
         document.addEventListener('DOMContentLoaded', function() {
             const csrftoken = getCSRFToken();
+            if (csrftoken) {
+                // Add CSRF token to all AJAX requests
+                const xhrOpen = XMLHttpRequest.prototype.open;
+                XMLHttpRequest.prototype.open = function() {
+                    const result = xhrOpen.apply(this, arguments);
+                    const method = arguments[0].toUpperCase();
+                    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                        this.setRequestHeader('X-CSRFToken', csrftoken);
+                    }
+                    return result;
+                };
+
+                // Add CSRF token to fetch requests
+                const originalFetch = window.fetch;
+                window.fetch = function() {
+                    let [resource, config] = arguments;
+                    if(config === undefined) {
+                        config = {};
+                    }
+                    if(config.headers === undefined) {
+                        config.headers = {};
+                    }
+                    config.headers['X-CSRFToken'] = csrftoken;
+                    return originalFetch(resource, config);
+                };
+            }
             
             // Add CSRF token to all forms
             document.querySelectorAll('form').forEach(form => {
@@ -656,19 +558,6 @@
                     form.appendChild(input);
                 }
             });
-
-            // Set up AJAX CSRF headers
-            if (csrftoken) {
-                const xhrOpen = XMLHttpRequest.prototype.open;
-                XMLHttpRequest.prototype.open = function() {
-                    const result = xhrOpen.apply(this, arguments);
-                    const method = arguments[0].toUpperCase();
-                    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                        this.setRequestHeader('X-CSRFToken', csrftoken);
-                    }
-                    return result;
-                };
-            }
         });
 
         // Toast Notification System

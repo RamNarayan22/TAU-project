@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Tickets{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-xl shadow-xl overflow-hidden mb-8">
+        <div class="px-8 py-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div class="mb-6 lg:mb-0">
+                    <h1 class="text-3xl lg:text-4xl font-bold text-white mb-2">
+                        My Tickets
+                    </h1>
+                    <p class="text-blue-100 text-lg">
+                        Track the status of your submitted complaints
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-ticket-alt text-2xl text-white"></i>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg">{{ student_name }}</h3>
+                        <p class="text-blue-100 text-sm">Student Portal</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ tickets.count }}</h3>
+            <p class="text-gray-600 text-sm">Total Tickets</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ tickets|length|add:"-1"|default:0 }}</h3>
+            <p class="text-gray-600 text-sm">Pending Tickets</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ tickets|length|add:"-2"|default:0 }}</h3>
+            <p class="text-gray-600 text-sm">Resolved Tickets</p>
+        </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-list mr-2"></i>All Tickets
+                </h2>
+                <a href="{% url 'student:nt' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    <i class="fas fa-plus mr-1"></i> New Ticket
+                </a>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for ticket in tickets %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-blue-600">{{ ticket.ticket_id }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 max-w-xs truncate">{{ ticket.subject }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-building mr-1"></i>
+                                {{ ticket.department.name }}
+                            </div>
+                            {% if ticket.original_department and ticket.original_department != ticket.department %}
+                            <div class="text-xs text-orange-600 mt-1">
+                                <i class="fas fa-arrow-up mr-1"></i>Escalated from {{ ticket.original_department.name }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full inline-flex items-center
+                                {% if ticket.priority == 'urgent' %}bg-red-100 text-red-800
+                                {% elif ticket.priority == 'high' %}bg-orange-100 text-orange-800
+                                {% elif ticket.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                <span class="w-2 h-2 rounded-full mr-1.5
+                                    {% if ticket.priority == 'urgent' %}bg-red-400
+                                    {% elif ticket.priority == 'high' %}bg-orange-400
+                                    {% elif ticket.priority == 'medium' %}bg-yellow-400
+                                    {% else %}bg-blue-400{% endif %}">
+                                </span>
+                                {{ ticket.priority|title }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if ticket.status == 'escalated' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                <span class="w-2 h-2 bg-orange-400 rounded-full mr-1.5"></span>
+                                <i class="fas fa-arrow-up mr-1"></i>Escalated
+                            </span>
+                            {% elif ticket.status == 'resolved' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <span class="w-2 h-2 bg-green-400 rounded-full mr-1.5"></span>
+                                <i class="fas fa-check mr-1"></i>Resolved
+                            </span>
+                            {% elif ticket.status == 'in_progress' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <span class="w-2 h-2 bg-blue-400 rounded-full mr-1.5"></span>
+                                <i class="fas fa-clock mr-1"></i>In Progress
+                            </span>
+                            {% elif ticket.status == 'on_hold' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <span class="w-2 h-2 bg-yellow-400 rounded-full mr-1.5"></span>
+                                <i class="fas fa-pause mr-1"></i>On Hold
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <span class="w-2 h-2 bg-gray-400 rounded-full mr-1.5"></span>
+                                <i class="fas fa-file-alt mr-1"></i>Open
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ ticket.created_at|date:"M d, Y" }}</div>
+                            <div class="text-xs text-gray-500">{{ ticket.created_at|timesince }} ago</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showTicketDetails('{{ ticket.id }}')" 
+                                    class="text-blue-600 hover:text-blue-900 flex items-center">
+                                <i class="fas fa-eye mr-1"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center">
+                            <div class="flex flex-col items-center justify-center text-gray-500">
+                                <i class="fas fa-ticket-alt text-4xl mb-4"></i>
+                                <p class="text-lg font-medium">No tickets found</p>
+                                <p class="text-sm mt-1">You haven't submitted any complaints yet</p>
+                                <a href="{% url 'student:nt' %}" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                    <i class="fas fa-plus mr-1"></i> Submit Your First Ticket
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Details Modal -->
+<div id="ticketModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" id="modalTitle">Ticket Details</h3>
+            <button onclick="closeTicketModal()" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="modalContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+function showTicketDetails(ticketId) {
+    // Show loading state
+    document.getElementById('modalContent').innerHTML = `
+        <div class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2">Loading...</span>
+        </div>
+    `;
+    
+    // Show modal
+    document.getElementById('ticketModal').classList.remove('hidden');
+    
+    // Fetch ticket details
+    fetch(`/student/ticket/${ticketId}/details/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('modalContent').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('modalContent').innerHTML = `
+                <div class="text-center py-8 text-red-600">
+                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                    <p>Error loading ticket details</p>
+                </div>
+            `;
+        });
+}
+
+function closeTicketModal() {
+    document.getElementById('ticketModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('ticketModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeTicketModal();
+    }
+});
+</script>
+{% endblock %} 

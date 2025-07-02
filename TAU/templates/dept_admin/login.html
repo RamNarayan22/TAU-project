@@ -2,7 +2,15 @@
 {% load static %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/Smain.css' %}">
+<!-- Add Inter font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Add our custom styles -->
+<link rel="stylesheet" href="{% static 'css/dept_admin_login.css' %}">
+<link rel="stylesheet" href="{% static 'css/dept_admin_responsive.css' %}">
+
 <div class="container">
     <div class="left-section">
         <div class="brand">
@@ -13,7 +21,7 @@
         
         <div class="hero-content">
             <h1>Department Admin Portal</h1>
-            <p>Welcome to the department administration portal. Manage student complaints and maintain academic excellence.</p>
+            <p>Welcome to the department administration portal. Manage student complaints, track SLAs, and maintain academic excellence with our comprehensive admin tools.</p>
         </div>
     </div>
     
@@ -35,9 +43,9 @@
                     <label for="username" class="required-field">Department Admin Username</label>
                     <div class="input-container">
                         <span class="input-icon">👤</span>
-                        <input type="text" id="username" name="username" placeholder="Enter your admin username (not email)" required>
+                        <input type="text" id="username" name="username" placeholder="Enter your admin username" required>
                     </div>
-                    <small class="form-text text-muted">Use your department admin username, not your email address.</small>
+                    <small class="form-text">Use your department admin username, not your email address.</small>
                 </div>
                 
                 <div class="form-group">

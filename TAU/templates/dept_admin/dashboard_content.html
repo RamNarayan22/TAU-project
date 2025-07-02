@@ -1,0 +1,300 @@
+<!-- Top Header -->
+<div class="top-header">
+    <div class="header-info">
+        <h1 class="department-title">{{ department.name }} Department</h1>
+        <div class="header-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search tickets..." id="searchTickets">
+        </div>
+    </div>
+    <div class="header-profile">
+        <span class="welcome-text">Welcome, {{ request.user.first_name|default:request.user.username }}</span>
+        <div class="profile-image">
+            <i class="fas fa-user-circle"></i>
+        </div>
+    </div>
+</div>
+
+{% if is_general_dept %}
+<!-- General Department Dashboard -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Escalated</h3>
+            <p class="stat-value">{{ escalated_count }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+            <h3>In Progress</h3>
+            <p class="stat-value">{{ in_progress_count }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Resolved</h3>
+            <p class="stat-value">{{ resolved_count }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Resolution Rate</h3>
+            <p class="stat-value">{{ resolution_rate|floatformat:1 }}%</p>
+        </div>
+    </div>
+</div>
+
+<div class="tickets-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th><i class="fas fa-hashtag"></i> Ticket ID</th>
+                <th><i class="fas fa-user"></i> Student</th>
+                <th><i class="fas fa-comment"></i> Subject</th>
+                <th><i class="fas fa-info-circle"></i> Status</th>
+                <th><i class="fas fa-building"></i> Original Dept</th>
+                <th><i class="fas fa-arrow-up"></i> Priority</th>
+                <th><i class="fas fa-clock"></i> Escalated At</th>
+                <th><i class="fas fa-calendar"></i> Created At</th>
+                <th><i class="fas fa-cog"></i> Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td><span class="ticket-id">{{ ticket.ticket_id }}</span></td>
+                <td>{{ ticket.student.username }}</td>
+                <td>{{ ticket.subject|truncatechars:100 }}</td>
+                <td>
+                    <span class="status-badge status-{{ ticket.status|lower }}">
+                        <i class="fas fa-circle"></i> {{ ticket.get_status_display }}
+                    </span>
+                </td>
+                <td>{{ ticket.original_department.name }}</td>
+                <td>
+                    <span class="priority-badge priority-{{ ticket.priority|lower }}">
+                        {{ ticket.priority|title }}
+                    </span>
+                </td>
+                <td>{{ ticket.escalated_at|date:"M d, Y H:i" }}</td>
+                <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                <td>
+                    <div class="action-buttons">
+                        {% if ticket.status == 'escalated' %}
+                        <a href="{% url 'dept_admin:handle_escalated_ticket' ticket.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-tools"></i> Handle
+                        </a>
+                        {% elif ticket.status == 'in_progress' %}
+                        <a href="{% url 'dept_admin:handle_escalated_ticket' ticket.id %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Update
+                        </a>
+                        {% elif ticket.status == 'resolved' %}
+                        <a href="{% url 'dept_admin:view_ticket' ticket.id %}" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="text-center">
+                    <div class="empty-state">
+                        <i class="fas fa-ticket-alt"></i>
+                        <p>No tickets found</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<!-- Regular Department Dashboard -->
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card total">
+        <div class="stat-icon">
+            <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Total Tickets</h3>
+            <p class="stat-number">{{ total_tickets }}</p>
+            <span class="stat-label">{{ department.name }} Department</span>
+        </div>
+    </div>
+    <div class="stat-card pending">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Pending</h3>
+            <p class="stat-number">{{ pending_count }}</p>
+            <span class="stat-label">Require Action</span>
+        </div>
+    </div>
+    <div class="stat-card progress">
+        <div class="stat-icon">
+            <i class="fas fa-spinner"></i>
+        </div>
+        <div class="stat-details">
+            <h3>In Progress</h3>
+            <p class="stat-number">{{ in_progress_count }}</p>
+            <span class="stat-label">Being Handled</span>
+        </div>
+    </div>
+    <div class="stat-card resolved">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Resolved</h3>
+            <p class="stat-number">{{ resolved_count }}</p>
+            <span class="stat-label">Completed</span>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Tickets Section -->
+<div class="tickets-section" id="tickets">
+    <div class="section-header">
+        <div class="header-left">
+            <h2><i class="fas fa-ticket-alt"></i> {{ department.name }} Department Tickets</h2>
+            <span class="subtitle">Manage and track department tickets</span>
+        </div>
+        <div class="header-actions">
+            {% if not is_general_dept %}
+            <a href="{% url 'dept_admin:sla_dashboard' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-up"></i> View SLA & Escalate
+            </a>
+            {% endif %}
+            {% if user.is_superuser %}
+            <a href="{% url 'dept_admin:bulk_create_students' %}" class="btn btn-success">
+                <i class="fas fa-users"></i> Bulk Create Students
+            </a>
+            {% endif %}
+            <button class="btn btn-outline" onclick="window.location.href='{% url 'dept_admin:export_complaints' %}'">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+        </div>
+    </div>
+
+    <div class="tickets-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> Ticket ID</th>
+                    <th><i class="fas fa-user"></i> Student</th>
+                    <th><i class="fas fa-comment"></i> Subject</th>
+                    <th><i class="fas fa-info-circle"></i> Status</th>
+                    {% if is_general_dept %}
+                    <th><i class="fas fa-building"></i> Original Dept</th>
+                    <th><i class="fas fa-arrow-up"></i> Priority</th>
+                    <th><i class="fas fa-clock"></i> Escalated At</th>
+                    {% else %}
+                    <th><i class="fas fa-arrow-up"></i> Priority</th>
+                    {% endif %}
+                    <th><i class="fas fa-calendar"></i> Created At</th>
+                    <th><i class="fas fa-cog"></i> Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td><span class="ticket-id">{{ ticket.ticket_id }}</span></td>
+                    <td>{{ ticket.student.username }}</td>
+                    <td>{{ ticket.subject|truncatechars:100 }}</td>
+                    <td>
+                        <span class="status-badge status-{{ ticket.status|lower }}">
+                            <i class="fas fa-circle"></i> {{ ticket.get_status_display }}
+                        </span>
+                    </td>
+                    {% if is_general_dept %}
+                    <td>{{ ticket.original_department.name }}</td>
+                    <td>
+                        <span class="priority-badge priority-{{ ticket.priority|lower }}">
+                            {{ ticket.priority|title }}
+                        </span>
+                    </td>
+                    <td>{{ ticket.escalated_at|date:"M d, Y H:i" }}</td>
+                    {% else %}
+                    <td>
+                        <span class="priority-badge priority-{{ ticket.priority|lower }}">
+                            {{ ticket.priority|title }}
+                        </span>
+                    </td>
+                    {% endif %}
+                    <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'dept_admin:update_complaint' ticket.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Update
+                            </a>
+                            {% if not is_general_dept %}
+                            <a href="{% url 'dept_admin:escalate_ticket' ticket.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-arrow-up"></i> Escalate
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_general_dept %}9{% else %}7{% endif %}" class="text-center">
+                        {% if is_general_dept %}
+                        No escalated tickets found
+                        {% else %}
+                        No tickets found for {{ department.name }} Department
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-200">
+        <h3 class="text-xl font-semibold mb-4">Student Management</h3>
+        <div class="space-y-4">
+            {% if user.is_superuser %}
+            <a href="{% url 'dept_admin:create_student' %}" class="block text-blue-600 hover:text-blue-800">
+                <i class="fas fa-users mr-2"></i>Create Students
+            </a>
+            <p class="text-sm text-gray-600">Create single or bulk student accounts</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchTickets');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.tickets-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchText) ? '' : 'none';
+            });
+        });
+    }
+});
+</script> 

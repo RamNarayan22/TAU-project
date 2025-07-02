@@ -17,10 +17,14 @@ class Command(BaseCommand):
                     # Create or update profile
                     profile, created = Profile.objects.get_or_create(
                         user=existing_superuser,
-                        defaults={'is_admin': True}
+                        defaults={
+                            'is_admin': True,
+                            'must_change_password': True
+                        }
                     )
                     if not created:
                         profile.is_admin = True
+                        profile.must_change_password = True
                         profile.save()
                     
                     self.stdout.write(self.style.SUCCESS(f'Profile updated for superuser {existing_superuser.username}'))
@@ -44,7 +48,8 @@ class Command(BaseCommand):
             # Create profile for superuser
             Profile.objects.create(
                 user=superuser,
-                is_admin=True
+                is_admin=True,
+                must_change_password=True
             )
 
             self.stdout.write(self.style.SUCCESS(f'Superuser {username} created successfully'))

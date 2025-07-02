@@ -32,9 +32,14 @@ class Profile(models.Model):
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     is_admin = models.BooleanField(default=False)
     must_change_password = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # New field for student mobile number
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+    def is_general_admin(self):
+        """Check if the user is an admin of the General department."""
+        return self.is_admin and self.department and self.department.name == 'General'
 
 class Complaint(models.Model):
     STATUS_CHOICES = [

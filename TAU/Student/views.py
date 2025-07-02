@@ -1,11 +1,11 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt, csrf_protect
 from django.middleware.csrf import get_token, rotate_token
 from django.db import transaction
 from django.contrib.auth.forms import PasswordChangeForm
@@ -13,11 +13,13 @@ from django.contrib.auth import update_session_auth_hash
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
 
 from .forms import ComplaintForm, StudentRegistrationForm
 from core.models import Profile, Department
 from .models import Ticket, SLABreachLog
 from .decorators import student_required
+from dept_admin.utils import complete_student_registration
 
 
 
@@ -30,13 +32,21 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 
 @ensure_csrf_cookie
+@csrf_protect
 def lp(request):
+    # Generate CSRF token immediately
+    get_token(request)
+    
     # If user is already logged in, redirect appropriately
     if request.user.is_authenticated:
         # Ensure profile exists
         if not hasattr(request.user, 'profile'):
             from core.models import Profile
-            Profile.objects.create(user=request.user, is_admin=request.user.is_staff)
+            Profile.objects.create(
+                user=request.user,
+                is_admin=request.user.is_staff,
+                must_change_password=not request.user.is_staff
+            )
         # If admin user, log them out and redirect to choose_portal
         if request.user.is_superuser or request.user.is_staff or (hasattr(request.user, 'profile') and request.user.profile.is_admin):
             auth_logout(request)
@@ -47,9 +57,6 @@ def lp(request):
         if request.user.profile.must_change_password:
             return redirect('student:change_password')
         return redirect('student:landingpage')
-
-    # Generate CSRF token
-    get_token(request)
     
     if request.method == 'POST':
         email = request.POST.get('emaill')
@@ -85,9 +92,19 @@ def lp(request):
         except User.DoesNotExist:
             messages.error(request, 'User with this email does not exist.')
     
-    # Generate new CSRF token for the form
-    get_token(request)
-    return render(request, 'login.html')
+    # Ensure CSRF token is in the response
+    response = render(request, 'login.html')
+    response.set_cookie(
+        key=settings.CSRF_COOKIE_NAME,
+        value=get_token(request),
+        max_age=None,
+        path=settings.CSRF_COOKIE_PATH,
+        domain=settings.CSRF_COOKIE_DOMAIN,
+        secure=settings.CSRF_COOKIE_SECURE,
+        httponly=settings.CSRF_COOKIE_HTTPONLY,
+        samesite=settings.CSRF_COOKIE_SAMESITE
+    )
+    return response
 
 def logout_view(request):
     auth_logout(request)
@@ -123,7 +140,7 @@ def change_password(request):
     return render(request, 'change_password.html', {'form': form})
 
 from django.shortcuts import render, redirect
-from core.models import Complaint, Department
+from core.models import Department
 from django.contrib.auth.decorators import login_required
 from core.utils import generate_ticket_id, calculate_sla_due
 from .forms import ComplaintForm
@@ -220,22 +237,22 @@ def sla_dashboard(request):
     start_date = timezone.now() - timedelta(days=days)
     
     # Overall metrics
-    total_tickets = Complaint.objects.filter(created_at__gte=start_date).count()
-    resolved_tickets = Complaint.objects.filter(
+    total_tickets = Ticket.objects.filter(created_at__gte=start_date).count()
+    resolved_tickets = Ticket.objects.filter(
         created_at__gte=start_date,
-        status='Resolved'
+        status='resolved'
     ).count()
     
     # Calculate resolution rate
     resolution_rate = (resolved_tickets / total_tickets * 100) if total_tickets > 0 else 0
     
     # Calculate average resolution time
-    avg_resolution_time = Complaint.objects.filter(
+    avg_resolution_time = Ticket.objects.filter(
         created_at__gte=start_date,
-        status='Resolved'
+        resolved_at__isnull=False
     ).aggregate(
         avg_time=Avg(
-            'updated_at' - 'created_at'
+            'resolved_at' - 'created_at'
         )
     )['avg_time']
     
@@ -249,14 +266,14 @@ def sla_dashboard(request):
     department_metrics = []
     
     for dept in departments:
-        dept_tickets = Complaint.objects.filter(
+        dept_tickets = Ticket.objects.filter(
             department=dept,
             created_at__gte=start_date
         )
         
         dept_total = dept_tickets.count()
         if dept_total > 0:
-            dept_resolved = dept_tickets.filter(status='Resolved').count()
+            dept_resolved = dept_tickets.filter(status='resolved').count()
             
             department_metrics.append({
                 'name': dept.name,
@@ -284,7 +301,7 @@ def vt(request):
     priority = request.GET.get('priority', '')
     
     # Base queryset
-    tickets = Complaint.objects.filter(user=user).order_by('-created_at')
+    tickets = Ticket.objects.filter(student=user).order_by('-created_at')
     
     # Apply filters
     if status:
@@ -296,8 +313,8 @@ def vt(request):
         'tickets': tickets,
         'current_status': status,
         'current_priority': priority,
-        'status_choices': Complaint.STATUS_CHOICES,
-        'priority_choices': Complaint.PRIORITY_CHOICES,
+        'status_choices': Ticket.STATUS_CHOICES,
+        'priority_choices': Ticket.PRIORITY_CHOICES,
     }
     return render(request, 'viewtickets.html', context)
 
@@ -366,6 +383,55 @@ def new_ticket(request):
 def view_tickets(request):
     tickets = Ticket.objects.filter(student=request.user).order_by('-created_at')
     context = {
-        'tickets': tickets
+        'tickets': tickets,
+        'student_name': request.user.first_name or request.user.username
     }
     return render(request, 'viewtickets.html', context)
+
+@login_required
+@student_required
+def ticket_details(request, ticket_id):
+    """View detailed information about a specific ticket"""
+    ticket = get_object_or_404(Ticket, id=ticket_id, student=request.user)
+    updates = ticket.updates.filter(is_internal=False).order_by('-created_at')  # Only show non-internal updates to students
+    
+    context = {
+        'ticket': ticket,
+        'updates': updates,
+    }
+    return render(request, 'ticket_details.html', context)
+
+@ensure_csrf_cookie
+def complete_registration(request):
+    token = request.GET.get('token')
+    
+    if not token:
+        messages.error(request, 'Invalid registration link.')
+        return redirect('student:loginn')
+    
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if not password or not confirm_password:
+            messages.error(request, 'Both password fields are required.')
+            return render(request, 'Student/complete_registration.html', {'token': token})
+        
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'Student/complete_registration.html', {'token': token})
+        
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            return render(request, 'Student/complete_registration.html', {'token': token})
+        
+        success, result = complete_student_registration(token, password)
+        
+        if success:
+            messages.success(request, 'Registration completed successfully! You can now log in with your roll number and password.')
+            return redirect('student:loginn')
+        else:
+            messages.error(request, result)
+            return render(request, 'Student/complete_registration.html', {'token': token})
+    
+    return render(request, 'Student/complete_registration.html', {'token': token})

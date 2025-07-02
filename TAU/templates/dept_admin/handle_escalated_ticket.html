@@ -1,0 +1,308 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Handle Escalated Ticket - {{ ticket.ticket_id }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="flex items-center">
+    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+    <a href="{% url 'dept_admin:escalated_tickets' %}" class="text-blue-600 hover:text-blue-800">Escalated Tickets</a>
+</li>
+<li class="flex items-center">
+    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+    <span class="text-gray-600">{{ ticket.ticket_id }}</span>
+</li>
+{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <!-- Ticket Header -->
+    <div class="bg-gradient-to-r from-orange-600 via-orange-700 to-orange-800 rounded-xl shadow-xl overflow-hidden">
+        <div class="px-8 py-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div class="mb-6 lg:mb-0">
+                    <h1 class="text-3xl lg:text-4xl font-bold text-white mb-2">
+                        Escalated Ticket: {{ ticket.ticket_id }}
+                    </h1>
+                    <p class="text-orange-100 text-lg mb-4">
+                        {{ ticket.subject }}
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <span class="text-orange-100 text-sm font-medium">Original Department:</span>
+                            <span class="text-white font-semibold ml-2">{{ ticket.original_department.name|default:"Not available" }}</span>
+                        </div>
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <span class="text-orange-100 text-sm font-medium">Escalated By:</span>
+                            <span class="text-white font-semibold ml-2">
+                                {% if ticket.escalated_by %}
+                                {{ ticket.escalated_by.get_full_name|default:ticket.escalated_by.username }}
+                                {% else %}
+                                Not available
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <span class="text-orange-100 text-sm font-medium">Escalated:</span>
+                            <span class="text-white font-semibold ml-2">{{ ticket.escalated_at|date:"M d, Y H:i"|default:"Not available" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-exclamation-triangle text-2xl text-white"></i>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg">Escalated Ticket</h3>
+                        <p class="text-orange-100 text-sm">Requires General Department Attention</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Ticket Information -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-xl font-bold text-gray-900">Ticket Information</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Student</label>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user-circle text-gray-400 mr-3"></i>
+                                    <div>
+                                        {% if ticket.student %}
+                                        <div class="font-medium">{{ ticket.student.get_full_name|default:ticket.student.username }}</div>
+                                        <div class="text-sm text-gray-500">{{ ticket.student.email }}</div>
+                                        {% else %}
+                                        <div class="font-medium text-gray-500">Student information not available</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full inline-flex items-center
+                                    {% if ticket.priority == 'urgent' %}bg-red-100 text-red-800
+                                    {% elif ticket.priority == 'high' %}bg-orange-100 text-orange-800
+                                    {% elif ticket.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    <span class="w-2 h-2 rounded-full mr-1.5
+                                        {% if ticket.priority == 'urgent' %}bg-red-400
+                                        {% elif ticket.priority == 'high' %}bg-orange-400
+                                        {% elif ticket.priority == 'medium' %}bg-yellow-400
+                                        {% else %}bg-blue-400{% endif %}">
+                                    </span>
+                                    {{ ticket.priority|title }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Created</label>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                                {{ ticket.created_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if ticket.status == 'escalated' %}bg-orange-100 text-orange-800
+                                    {% elif ticket.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                    {% elif ticket.status == 'resolved' %}bg-green-100 text-green-800
+                                    {% elif ticket.status == 'on_hold' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    <span class="w-2 h-2 rounded-full mr-1.5
+                                        {% if ticket.status == 'escalated' %}bg-orange-400
+                                        {% elif ticket.status == 'in_progress' %}bg-blue-400
+                                        {% elif ticket.status == 'resolved' %}bg-green-400
+                                        {% elif ticket.status == 'on_hold' %}bg-yellow-400
+                                        {% else %}bg-gray-400{% endif %}">
+                                    </span>
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                            <p class="text-gray-900 whitespace-pre-wrap">{{ ticket.description }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if ticket.escalation_reason %}
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Escalation Reason</label>
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+                            <p class="text-orange-800">{{ ticket.escalation_reason }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ticket Updates -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-xl font-bold text-gray-900">Ticket Updates</h2>
+                </div>
+                <div class="p-6">
+                    {% if updates %}
+                    <div class="space-y-4">
+                        {% for update in updates %}
+                        <div class="border-l-4 border-blue-500 pl-4 py-3 {% if update.is_internal %}bg-blue-50{% else %}bg-gray-50{% endif %}">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-sm font-medium text-gray-900">
+                                            {{ update.user.get_full_name|default:update.user.username }}
+                                        </span>
+                                        {% if update.is_internal %}
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            Internal
+                                        </span>
+                                        {% endif %}
+                                        <span class="ml-2 text-sm text-gray-500">
+                                            {{ update.created_at|date:"M d, Y H:i" }}
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-700">{{ update.comment }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-comments text-3xl mb-3"></i>
+                        <p>No updates yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="space-y-6">
+            <!-- Resolution Actions -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-xl font-bold text-gray-900">Resolution Actions</h2>
+                    <p class="text-gray-600 text-sm">Report the current status of this escalated ticket</p>
+                </div>
+                <div class="p-6">
+                    <form method="post" class="space-y-6">
+                        {% csrf_token %}
+                        <div class="mb-6">
+                            <label for="comment" class="block text-sm font-medium text-gray-700">Admin Comment</label>
+                            <textarea
+                                name="comment"
+                                id="comment"
+                                rows="4"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="Add any notes or comments about this action..."
+                            ></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button type="submit" name="action" value="resolve" class="btn-success">
+                                <i class="fas fa-check mr-2"></i>Mark as Resolved
+                            </button>
+                            
+                            <button type="submit" name="action" value="in_progress" class="btn-warning">
+                                <i class="fas fa-clock mr-2"></i>Need More Time
+                            </button>
+                            
+                            <button type="submit" name="action" value="return" class="btn-danger">
+                                <i class="fas fa-undo mr-2"></i>Return to Department
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-xl font-bold text-gray-900">Quick Information</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-sm font-medium text-gray-700">Time Since Escalation</div>
+                            <div class="text-lg font-semibold text-gray-900">{{ ticket.escalated_at|timesince }}</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm font-medium text-gray-700">Original Department</div>
+                            <div class="text-lg font-semibold text-gray-900">{{ ticket.original_department.name }}</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm font-medium text-gray-700">Escalated By</div>
+                            <div class="text-lg font-semibold text-gray-900">{{ ticket.escalated_by.get_full_name|default:ticket.escalated_by.username }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.querySelector('form');
+    const actionRadios = document.querySelectorAll('input[name="action"]');
+    const notesTextarea = document.getElementById('resolution_notes');
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    function validateForm() {
+        const actionSelected = Array.from(actionRadios).some(radio => radio.checked);
+        const notesProvided = notesTextarea.value.trim().length > 0;
+        
+        submitButton.disabled = !actionSelected || !notesProvided;
+        
+        if (submitButton.disabled) {
+            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+    
+    actionRadios.forEach(radio => {
+        radio.addEventListener('change', validateForm);
+    });
+    
+    notesTextarea.addEventListener('input', validateForm);
+    
+    // Initial validation
+    validateForm();
+    
+    // Form submission confirmation
+    form.addEventListener('submit', function(e) {
+        const selectedAction = document.querySelector('input[name="action"]:checked');
+        if (selectedAction) {
+            const actionText = selectedAction.closest('label').querySelector('.font-medium').textContent;
+            if (!confirm(`Are you sure you want to mark this ticket as "${actionText}"?`)) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

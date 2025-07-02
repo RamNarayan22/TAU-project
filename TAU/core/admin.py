@@ -28,12 +28,14 @@ class DepartmentFacultyCreationForm(UserCreationForm):
                     user=user,
                     defaults={
                         'department': self.cleaned_data['department'],
-                        'is_admin': self.cleaned_data['is_admin']
+                        'is_admin': self.cleaned_data['is_admin'],
+                        'must_change_password': True
                     }
                 )
                 if not created:
                     profile.department = self.cleaned_data['department']
                     profile.is_admin = self.cleaned_data['is_admin']
+                    profile.must_change_password = True
                     profile.save()
             return user
 

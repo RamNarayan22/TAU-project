@@ -49,7 +49,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.RemoteUserBackend',
 ]
 MIDDLEWARE = [
-    'core.middleware.DisableHTTPSMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.ForcePasswordChangeMiddleware',
+    'core.middleware.DisableHTTPSMiddleware',
 ]
 
 ROOT_URLCONF = 'TAU.urls'
@@ -177,12 +177,15 @@ X_FRAME_OPTIONS = 'DENY'
 # CSRF Settings
 CSRF_COOKIE_SECURE = False  # Allow non-HTTPS in development
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access in development
-CSRF_USE_SESSIONS = False  # Use cookies for CSRF in development
+CSRF_USE_SESSIONS = False  # Store CSRF token in cookie for development
 CSRF_COOKIE_SAMESITE = 'Lax'  # Less restrictive for development
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:7000', 'http://localhost:7000']
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+CSRF_COOKIE_DOMAIN = None  # Allow all domains in development
+CSRF_COOKIE_PATH = '/'  # Set cookie path to root
+CSRF_COOKIE_AGE = None  # Cookie expires when browser closes
 
 # Session Settings
 SESSION_COOKIE_HTTPONLY = True

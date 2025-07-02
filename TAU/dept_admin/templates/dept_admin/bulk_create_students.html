@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Create Students{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Bulk Create Students</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message|linebreaks }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h5>Instructions:</h5>
+                        <ol>
+                            <li>Download the Excel template using the button below</li>
+                            <li>Fill in the student details in the template:
+                                <ul>
+                                    <li>Roll Number (12 digits)</li>
+                                    <li>First Name</li>
+                                    <li>Last Name</li>
+                                    <li>Phone Number (10 digits)</li>
+                                </ul>
+                            </li>
+                            <li>Save the file and upload it using the form below</li>
+                            <li>The system will create accounts with default password: Random@123</li>
+                            <li>Students will be required to change their password on first login</li>
+                        </ol>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <a href="{% url 'dept_admin:download_template' %}" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download Template
+                        </a>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="file">Upload Excel File:</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls" required>
+                            <small class="form-text text-muted">Only Excel files (.xlsx, .xls) are accepted</small>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-upload"></i> Upload and Create Students
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if preview_data %}
+                    <div class="mt-4">
+                        <h5>Created Students:</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Roll Number</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone Number</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in preview_data %}
+                                    <tr>
+                                        <td>{{ student.roll_number }}</td>
+                                        <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                        <td>{{ student.email }}</td>
+                                        <td>{{ student.phone_number }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #212529;
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+{% endblock %} 

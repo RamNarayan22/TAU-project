@@ -2,41 +2,82 @@
 {% load static %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/login_old.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+<script>
+    // Ensure CSRF token is refreshed on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Update CSRF token in form if it exists
+        const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrfInput) {
+            csrfInput.value = csrfToken;
+        }
+    });
+</script>
 {% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <h2>Student Login</h2>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <form method="POST" action="{% url 'student:loginn' %}">
-        {% csrf_token %}
-        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-        <div class="form-group">
-            <label for="emaill">Email Address</label>
-            <div class="input-container">
-                <span class="input-icon">📧</span>
-                <input type="email" id="emaill" name="emaill" placeholder="Enter your email" required>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="passwordd">Password</label>
-            <div class="input-container">
-                <span class="input-icon">🔒</span>
-                <input type="password" id="passwordd" name="passwordd" placeholder="Enter your password" required>
+<div class="container">
+    <div class="left-section">
+        <div class="brand">
+            <div class="logo">
+                <img src="{% static 'css/image.png' %}" alt="Apollo University Logo">
             </div>
         </div>
         
-        <button type="submit" class="login-button">Sign In</button>
-    </form>
+        <div class="hero-content">
+            <h1>Welcome to Apollo University</h1>
+            <p>Join our community of learners and unlock your potential through education, innovation, and excellence.</p>
+        </div>
+    </div>
+    
+    <div class="right-section">
+        <div class="login-container">
+            <h2>Student Login</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'student:loginn' %}" id="loginForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="emaill" class="required-field">Email Address</label>
+                    <div class="input-container">
+                        <span class="input-icon">📧</span>
+                        <input type="email" id="emaill" name="emaill" placeholder="your.email@apollo.edu" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordd" class="required-field">Password</label>
+                    <div class="input-container">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="passwordd" name="passwordd" placeholder="Enter your password" required>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember" name="remember" checked>
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="login-button">Sign In</button>
+            </form>
+            
+            <p class="signup-link">Are you a faculty member? <a href="{% url 'dept_admin:login' %}">Department Login</a></p>
+        </div>
+    </div>
 </div>
 {% endblock %}

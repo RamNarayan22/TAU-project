@@ -1,0 +1,152 @@
+@media screen and (min-width: 1440px) {
+    .hero-content h1 {
+        font-size: 4rem;
+    }
+    
+    .login-container {
+        max-width: 500px;
+        padding: var(--space-xxl);
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .hero-content h1 {
+        font-size: 3rem;
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+    }
+    
+    .right-section {
+        width: 45%;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .left-section, .right-section {
+        width: 100%;
+        padding: var(--space-lg);
+    }
+    
+    .left-section {
+        min-height: 60vh;
+        justify-content: center;
+    }
+    
+    .brand {
+        position: absolute;
+        top: var(--space-lg);
+        left: var(--space-lg);
+    }
+    
+    .hero-content {
+        text-align: center;
+        margin: 0 auto;
+    }
+    
+    .right-section {
+        min-height: 40vh;
+        padding: var(--space-xl) var(--space-lg);
+    }
+    
+    .login-container {
+        margin: 0 auto;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2.5rem;
+        margin-bottom: var(--space-md);
+    }
+    
+    .hero-content p {
+        margin-bottom: var(--space-lg);
+    }
+    
+    .login-container {
+        padding: var(--space-lg);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .login-button {
+        width: 100%;
+    }
+    
+    .left-section, .right-section {
+        padding: var(--space-md);
+    }
+    
+    .brand {
+        top: var(--space-md);
+        left: var(--space-md);
+    }
+    
+    .logo span {
+        font-size: 1.25rem;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .hero-content h1 {
+        font-size: 1.75rem;
+    }
+    
+    .hero-content p {
+        font-size: 0.875rem;
+    }
+    
+    .login-container h2 {
+        font-size: 1.5rem;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+    }
+}
+
+@media screen and (max-height: 700px) and (min-width: 992px) {
+    .hero-content h1 {
+        font-size: 2.5rem;
+        margin-bottom: var(--space-md);
+    }
+    
+    .hero-content p {
+        margin-bottom: var(--space-md);
+    }
+    
+    .login-container {
+        padding: var(--space-lg);
+    }
+    
+    .form-group {
+        margin-bottom: var(--space-md);
+    }
+}
+
+@media print {
+    .container {
+        display: block;
+    }
+    
+    .left-section, .right-section {
+        width: 100%;
+        page-break-inside: avoid;
+    }
+    
+    .login-container {
+        box-shadow: none;
+    }
+} 
